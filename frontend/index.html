@@ -1425,7 +1425,7 @@ mark { background: rgba(56,189,248,0.2); color: var(--blue); border-radius: 2px;
             <div class="settings-section-title">OCR Sozlamalari</div>
             <div class="setting-row">
               <div class="setting-row-l">
-                <div class="setting-name">Claude Vision API</div>
+                <div class="setting-name">Groq Vision API</div>
                 <div class="setting-desc">Asosiy tahlil motori — haqiqiy AI</div>
               </div>
               <div class="toggle on" id="t-api"></div>
@@ -1491,23 +1491,8 @@ mark { background: rgba(56,189,248,0.2); color: var(--blue); border-radius: 2px;
           </div>
           <div class="settings-section">
             <div class="settings-section-title">Foydalanuvchilar</div>
-            <div class="user-profile-card">
-              <div class="upc-ava" id="set-ava">A</div>
-              <div>
-                <div class="upc-name" id="set-uname">Administrator</div>
-                <div class="upc-role" id="set-urole">admin</div>
-              </div>
-              <button class="btn btn-sec btn-sm ml-auto" onclick="showToast('Profil tahrirlash (demo)','info')">Tahrirlash</button>
-            </div>
-            <div class="user-profile-card">
-              <div class="upc-ava" style="background:linear-gradient(135deg, var(--surface3), var(--surface2));color:var(--teal)">O</div>
-              <div>
-                <div class="upc-name">Operator 1</div>
-                <div class="upc-role">operator</div>
-              </div>
-              <button class="btn btn-sec btn-sm ml-auto" onclick="showToast('Foydalanuvchi boshqaruvi (demo)','info')">Tahrirlash</button>
-            </div>
-            <button class="btn btn-ghost" style="margin-top:10px;" onclick="showToast('Foydalanuvchi qo\'shish (API orqali)','info')">+ Foydalanuvchi qo'shish</button>
+            <div id="users-list"></div>
+            <button class="btn btn-ghost" style="margin-top:10px;" id="btn-add-user" onclick="showAddUserModal()">+ Foydalanuvchi qo'shish</button>
           </div>
           <div class="settings-section">
             <div class="settings-section-title">Ma'lumotlar Bazasi</div>
@@ -1723,9 +1708,6 @@ function enterApp(user) {
   document.getElementById('u-ava').textContent = S.user.name[0];
   document.getElementById('u-name').textContent = S.user.name;
   document.getElementById('u-role').textContent = S.user.role;
-  document.getElementById('set-ava').textContent = S.user.name[0];
-  document.getElementById('set-uname').textContent = S.user.name;
-  document.getElementById('set-urole').textContent = S.user.role;
   initApp();
 }
 
@@ -1825,6 +1807,7 @@ function navTo(page) {
   if (page === 'cameras') initCameras();
   if (page === 'stats') renderStats();
   if (page === 'settings') {
+    loadUsers();
     apiCall('/stats/overview').then(s => {
       if (s) document.getElementById('db-count').textContent = s.total + ' ta yozuv';
     }).catch(() => {});
@@ -2580,6 +2563,7 @@ async function initCameras() {
               <div style="font-size:13px;font-weight:600;color:${c.active ? 'var(--green)' : 'var(--red)'};">${c.active ? 'Online' : 'Offline'}</div>
             </div>
           </div>
+          ${S.user.role === 'admin' ? `<button class="btn btn-sm ${c.active ? 'btn-danger' : 'btn-primary'}" style="margin-top:10px;width:100%;" onclick="toggleCameraStatus('${c.id}', ${c.active})">${c.active ? 'O\'chirish' : 'Yoqish'}</button>` : ''}
         </div>
       </div>
     `;
@@ -2753,6 +2737,177 @@ function drawOfflineScreen(canvas) {
   ctx.fillStyle = 'rgba(100,116,139,0.15)';
   ctx.font = '48px serif';
   ctx.fillText('📷', W / 2, H / 2 + 25);
+}
+
+// ════════════════════════════════════════
+// CAMERA STATUS TOGGLE
+// ════════════════════════════════════════
+async function toggleCameraStatus(camId, isActive) {
+  const newStatus = isActive ? 'inactive' : 'active';
+  try {
+    await apiCall('/cameras/' + camId, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus })
+    });
+    showToast(camId + ' — ' + (newStatus === 'active' ? 'Yoqildi' : 'O\'chirildi'), 'ok');
+    await loadCameras();
+    initCameras();
+  } catch (err) {
+    showToast('Xato: ' + (err.message || 'Kamera statusini o\'zgartirib bo\'lmadi'), 'err');
+  }
+}
+
+// ════════════════════════════════════════
+// USER MANAGEMENT
+// ════════════════════════════════════════
+async function loadUsers() {
+  try {
+    const users = await apiCall('/users/');
+    if (!Array.isArray(users)) return;
+    const el = document.getElementById('users-list');
+    if (!el) return;
+    const isAdmin = S.user.role === 'admin';
+    el.innerHTML = users.map(u => {
+      const ava = u.full_name ? u.full_name[0].toUpperCase() : '?';
+      const roleColor = u.role === 'admin' ? 'var(--blue)' : 'var(--teal)';
+      const roleLabel = u.role === 'admin' ? 'Admin' : 'Operator';
+      return `
+        <div class="user-profile-card" style="opacity:${u.is_active ? 1 : 0.5};">
+          <div class="upc-ava" style="background:linear-gradient(135deg, var(--surface3), var(--surface2));color:${roleColor}">${ava}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="upc-name">${u.full_name}${!u.is_active ? ' <span style="color:var(--red);font-size:11px;">(nofaol)</span>' : ''}</div>
+            <div class="upc-role">${u.username} · ${roleLabel}</div>
+          </div>
+          ${isAdmin ? `<button class="btn btn-sec btn-sm" onclick="showEditUserModal(${u.id}, '${u.full_name.replace(/'/g, "\\'")}', '${u.role}', ${u.is_active})">Tahrirlash</button>` : ''}
+        </div>`;
+    }).join('');
+    // Hide add button for non-admins
+    const addBtn = document.getElementById('btn-add-user');
+    if (addBtn) addBtn.style.display = isAdmin ? '' : 'none';
+  } catch (err) {
+    console.warn('loadUsers failed', err);
+  }
+}
+
+function showAddUserModal() {
+  const existing = document.getElementById('user-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'user-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:28px;width:400px;max-width:90vw;">
+      <div style="font-family:var(--font-h);font-size:17px;font-weight:700;color:var(--white);margin-bottom:20px;">Yangi foydalanuvchi</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <input class="inp" id="nu-username" placeholder="Foydalanuvchi nomi" autocomplete="off">
+        <input class="inp" id="nu-fullname" placeholder="To'liq ism">
+        <input class="inp" id="nu-password" type="password" placeholder="Parol (min 4 ta belgi)">
+        <select class="inp" id="nu-role">
+          <option value="operator">Operator</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="document.getElementById('user-modal').remove()">Bekor qilish</button>
+        <button class="btn btn-primary" onclick="createUser()">Yaratish</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('nu-username').focus();
+}
+
+async function createUser() {
+  const username = document.getElementById('nu-username').value.trim();
+  const full_name = document.getElementById('nu-fullname').value.trim();
+  const password = document.getElementById('nu-password').value;
+  const role = document.getElementById('nu-role').value;
+
+  if (!username || !full_name || !password) {
+    showToast('Barcha maydonlarni to\'ldiring', 'warn');
+    return;
+  }
+  if (password.length < 4) {
+    showToast('Parol kamida 4 ta belgi bo\'lishi kerak', 'warn');
+    return;
+  }
+
+  try {
+    await apiCall('/users/', {
+      method: 'POST',
+      body: JSON.stringify({ username, full_name, password, role })
+    });
+    showToast('✓ Foydalanuvchi yaratildi: ' + username, 'ok');
+    document.getElementById('user-modal').remove();
+    loadUsers();
+  } catch (err) {
+    showToast('Xato: ' + (err.message || 'Yaratib bo\'lmadi'), 'err');
+  }
+}
+
+function showEditUserModal(userId, fullName, role, isActive) {
+  const existing = document.getElementById('user-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'user-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:28px;width:400px;max-width:90vw;">
+      <div style="font-family:var(--font-h);font-size:17px;font-weight:700;color:var(--white);margin-bottom:20px;">Foydalanuvchini tahrirlash</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <input class="inp" id="eu-fullname" placeholder="To'liq ism" value="${fullName}">
+        <select class="inp" id="eu-role">
+          <option value="operator" ${role === 'operator' ? 'selected' : ''}>Operator</option>
+          <option value="admin" ${role === 'admin' ? 'selected' : ''}>Admin</option>
+        </select>
+        <input class="inp" id="eu-password" type="password" placeholder="Yangi parol (bo'sh = o'zgarmaydi)">
+        <label style="display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="eu-active" ${isActive ? 'checked' : ''}> Faol
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="document.getElementById('user-modal').remove()">Bekor qilish</button>
+        <button class="btn btn-primary" onclick="updateUser(${userId})">Saqlash</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('eu-fullname').focus();
+}
+
+async function updateUser(userId) {
+  const full_name = document.getElementById('eu-fullname').value.trim();
+  const role = document.getElementById('eu-role').value;
+  const password = document.getElementById('eu-password').value;
+  const is_active = document.getElementById('eu-active').checked;
+
+  if (!full_name) {
+    showToast('Ism bo\'sh bo\'lishi mumkin emas', 'warn');
+    return;
+  }
+
+  const body = { full_name, role, is_active };
+  if (password) {
+    if (password.length < 4) {
+      showToast('Parol kamida 4 ta belgi bo\'lishi kerak', 'warn');
+      return;
+    }
+    body.password = password;
+  }
+
+  try {
+    await apiCall('/users/' + userId, {
+      method: 'PATCH',
+      body: JSON.stringify(body)
+    });
+    showToast('✓ Foydalanuvchi yangilandi', 'ok');
+    document.getElementById('user-modal').remove();
+    loadUsers();
+  } catch (err) {
+    showToast('Xato: ' + (err.message || 'Yangilab bo\'lmadi'), 'err');
+  }
 }
 
 // ════════════════════════════════════════

@@ -18,7 +18,7 @@ from backend.database import ping_db
 from backend.exceptions import register_exception_handlers
 from backend.logging_config import setup_logging
 from backend.middleware.security_headers import SecurityHeadersMiddleware
-from backend.routers import auth, cameras, health, parts, scan, stats
+from backend.routers import auth, cameras, health, parts, scan, stats, users
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -75,6 +75,7 @@ app.include_router(parts.router, prefix=API_PREFIX)
 app.include_router(scan.router, prefix=API_PREFIX)
 app.include_router(stats.router, prefix=API_PREFIX)
 app.include_router(cameras.router, prefix=API_PREFIX)
+app.include_router(users.router, prefix=API_PREFIX)
 
 # ─── Static: uploaded images (read-only) ─────────────────
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from backend.models.camera import CameraStatus
 
@@ -26,3 +26,11 @@ class CameraReadWithStats(CameraRead):
 
     total_parts: int = 0
     today_parts: int = 0
+
+
+class CameraUpdate(BaseModel):
+    """Partial camera update."""
+
+    name: str | None = Field(None, min_length=1, max_length=100)
+    location: str | None = Field(None, max_length=100)
+    status: CameraStatus | None = None

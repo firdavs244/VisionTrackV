@@ -8,11 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db
 from backend.exceptions import NotFoundError
-from backend.middleware.auth_middleware import get_current_user
+from backend.middleware.auth_middleware import get_current_user, require_role
 from backend.models.camera import Camera
 from backend.models.part import Part
-from backend.models.user import User
-from backend.schemas.camera import CameraReadWithStats
+from backend.models.user import User, UserRole
+from backend.schemas.camera import CameraReadWithStats, CameraUpdate
 
 router = APIRouter(prefix="/cameras", tags=["cameras"])
 
@@ -71,5 +71,24 @@ async def get_camera(
     cam = await session.get(Camera, camera_id)
     if cam is None:
         raise NotFoundError(f"Kamera topilmadi: {camera_id}")
+    out = await _attach_stats(session, [cam])
+    return out[0]
+
+
+@router.patch("/{camera_id}", response_model=CameraReadWithStats)
+async def update_camera(
+    camera_id: str,
+    payload: CameraUpdate,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(require_role(UserRole.ADMIN))],
+) -> CameraReadWithStats:
+    """Update camera fields (admin only)."""
+    cam = await session.get(Camera, camera_id)
+    if cam is None:
+        raise NotFoundError(f"Kamera topilmadi: {camera_id}")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(cam, field, value)
+    await session.commit()
+    await session.refresh(cam)
     out = await _attach_stats(session, [cam])
     return out[0]
