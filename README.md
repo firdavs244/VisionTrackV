@@ -75,26 +75,26 @@ docker compose logs -f app
 
 ## Konfiguratsiya (`.env`)
 
-| O'zgaruvchi         | Default                                | Tavsif                                    |
-| ------------------- | -------------------------------------- | ----------------------------------------- |
-| `DATABASE_URL`      | `sqlite+aiosqlite:///./visiontrack.db` | SQLite yoki `postgresql+asyncpg://...`    |
-| `JWT_SECRET`        | _kerak_                                | Kamida 32 belgi, prodda almashtiring      |
-| `JWT_ACCESS_TTL`    | `900` (15 daq)                         | Access token muddati (sekund)             |
-| `JWT_REFRESH_TTL`   | `604800` (7 kun)                       | Refresh token muddati                     |
-| `OCR_BACKEND`       | `auto`                                 | `auto` / `groq` / `easyocr`              |
-| `GROQ_API_KEY`      | _bo'sh_                                | Groq Vision uchun (yo'q bo'lsa EasyOCR)  |
-| `MIN_CONFIDENCE`    | `70`                                   | Tasdiqlash uchun min ishonch %            |
-| `MAX_UPLOAD_MB`     | `10`                                   | Maks rasm hajmi (MB)                      |
-| `ALLOWED_ORIGINS`   | `["http://localhost:8000"]`            | CORS uchun                                |
-| `LOG_LEVEL`         | `INFO`                                 | `DEBUG`/`INFO`/`WARNING`/`ERROR`          |
+| O'zgaruvchi       | Default                                | Tavsif                                  |
+| ----------------- | -------------------------------------- | --------------------------------------- |
+| `DATABASE_URL`    | `sqlite+aiosqlite:///./visiontrack.db` | SQLite yoki `postgresql+asyncpg://...`  |
+| `JWT_SECRET`      | _kerak_                                | Kamida 32 belgi, prodda almashtiring    |
+| `JWT_ACCESS_TTL`  | `900` (15 daq)                         | Access token muddati (sekund)           |
+| `JWT_REFRESH_TTL` | `604800` (7 kun)                       | Refresh token muddati                   |
+| `OCR_BACKEND`     | `auto`                                 | `auto` / `groq` / `easyocr`             |
+| `GROQ_API_KEY`    | _bo'sh_                                | Groq Vision uchun (yo'q bo'lsa EasyOCR) |
+| `MIN_CONFIDENCE`  | `70`                                   | Tasdiqlash uchun min ishonch %          |
+| `MAX_UPLOAD_MB`   | `10`                                   | Maks rasm hajmi (MB)                    |
+| `ALLOWED_ORIGINS` | `["http://localhost:8000"]`            | CORS uchun                              |
+| `LOG_LEVEL`       | `INFO`                                 | `DEBUG`/`INFO`/`WARNING`/`ERROR`        |
 
 ### OCR rejimini tanlash
 
-| Rejim     | Qachon ishlatish                                            |
-| --------- | ----------------------------------------------------------- |
-| `auto`    | API key bor → Groq; yo'q → EasyOCR (tavsiya etiladi)      |
-| `groq`    | Faqat Groq Vision (bepul, tez, internet kerak)              |
-| `easyocr` | Faqat lokal (offline, bepul, lekin sekinroq + xotira ko'p)  |
+| Rejim     | Qachon ishlatish                                           |
+| --------- | ---------------------------------------------------------- |
+| `auto`    | API key bor → Groq; yo'q → EasyOCR (tavsiya etiladi)       |
+| `groq`    | Faqat Groq Vision (bepul, tez, internet kerak)             |
+| `easyocr` | Faqat lokal (offline, bepul, lekin sekinroq + xotira ko'p) |
 
 ---
 

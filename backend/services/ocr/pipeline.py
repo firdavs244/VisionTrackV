@@ -101,9 +101,9 @@ async def process_image(image_bytes: bytes, mime_type: str) -> ScanResult:
     try:
         raw = await backend.detect(image_bytes, mime_type)
     except Exception as exc:
-        # Auto-fallback: if Claude fails and we are in auto mode, try EasyOCR
-        if settings.OCR_BACKEND == "auto" and backend.name == "claude":
-            logger.warning("Claude OCR failed (%s); falling back to EasyOCR", exc)
+        # Auto-fallback: if Groq fails and we are in auto mode, try EasyOCR
+        if settings.OCR_BACKEND == "auto" and backend.name == "groq":
+            logger.warning("Groq OCR failed (%s); falling back to EasyOCR", exc)
             from backend.services.ocr.easyocr_backend import EasyOcrBackend
 
             backup = EasyOcrBackend()

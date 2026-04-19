@@ -54,7 +54,7 @@ class GroqBackend:
 
         body = {
             "model": settings.GROQ_MODEL,
-            "max_tokens": 1024,
+            "max_completion_tokens": 1024,
             "messages": [
                 {
                     "role": "user",
@@ -71,7 +71,12 @@ class GroqBackend:
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(GROQ_API_URL, headers=self._headers, json=body)
-        resp.raise_for_status()
+
+        if resp.status_code != 200:
+            body_text = resp.text
+            logger.error("Groq API %s: %s", resp.status_code, body_text[:500])
+            raise RuntimeError(f"Groq API error {resp.status_code}: {body_text[:200]}")
+
         data = resp.json()
 
         # Extract text from OpenAI-compatible response

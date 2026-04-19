@@ -27,7 +27,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "Content-Security-Policy",
                 (
                     "default-src 'self'; "
-                    "script-src 'self' 'unsafe-inline'; "
+                    "script-src 'self' 'unsafe-inline' blob:; "
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                     "font-src 'self' https://fonts.gstatic.com data:; "
                     "img-src 'self' data: blob:; "

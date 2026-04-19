@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     # ─── OCR ───────────────────────────────────────
     OCR_BACKEND: Literal["auto", "groq", "easyocr"] = "auto"
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.2-90b-vision-preview"
+    GROQ_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
     OCR_LANGUAGES: str = "en"
     OCR_GPU: bool = False
     OCR_MIN_CONFIDENCE: float = 0.5

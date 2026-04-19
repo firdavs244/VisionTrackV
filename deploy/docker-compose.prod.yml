@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vt
+      POSTGRES_PASSWORD: vt_prod_s3cret_2026
+      POSTGRES_DB: visiontrack
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vt -d visiontrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://vt:vt_prod_s3cret_2026@db:5432/visiontrack
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    command: sh -c "alembic upgrade head && python scripts/seed.py && uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pg_data:
