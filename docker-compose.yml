@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vt
+      POSTGRES_PASSWORD: vt_secret_change_me
+      POSTGRES_DB: visiontrack
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vt -d visiontrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://vt:vt_secret_change_me@db:5432/visiontrack
+      JWT_SECRET: change-me-in-production-please
+      OCR_BACKEND: ${OCR_BACKEND:-auto}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      ALLOWED_ORIGINS: '["http://localhost:8000"]'
+      LOG_LEVEL: INFO
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             python scripts/seed.py &&
+             uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pg_data:

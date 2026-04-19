@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VisionTrack · Sanoat Ko'rish Tizimi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root {
+  --bg:        #060b14;
+  --bg2:       #091121;
+  --surface:   #0d1a2e;
+  --surface2:  #122038;
+  --surface3:  #172540;
+  --border:    #1c2e46;
+  --border2:   #243a56;
+  --border3:   #2c4768;
+
+  --blue:      #38bdf8;
+  --blue-dim:  #0ea5e9;
+  --blue-glow: rgba(56,189,248,0.12);
+  --teal:      #2dd4bf;
+  --teal-glow: rgba(45,212,191,0.1);
+  --green:     #4ade80;
+  --green-bg:  rgba(74,222,128,0.08);
+  --amber:     #fbbf24;
+  --amber-bg:  rgba(251,191,36,0.08);
+  --red:       #f87171;
+  --red-bg:    rgba(248,113,113,0.08);
+  --violet:    #a78bfa;
+
+  --text:      #94a3b8;
+  --text2:     #64748b;
+  --text3:     #475569;
+  --white:     #f1f5f9;
+  --white2:    #cbd5e1;
+
+  --font-h:  'Sora', sans-serif;
+  --font-b:  'Nunito Sans', sans-serif;
+  --font-m:  'JetBrains Mono', monospace;
+
+  --r: 6px;
+  --r2: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow2: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-b);
+  font-size: 15px;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* subtle dot pattern */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(56,189,248,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ══════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--blue-dim); }
+
+/* ══════════════════════════════════════
+   LOGIN
+══════════════════════════════════════ */
+#login-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  background: radial-gradient(ellipse 120% 100% at 50% 0%, #0d1e38 0%, var(--bg) 70%);
+}
+
+.login-wrap {
+  width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow: var(--shadow2), 0 0 80px rgba(56,189,248,0.06);
+}
+
+.login-top {
+  padding: 40px 40px 32px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%);
+  text-align: center;
+}
+
+.login-icon {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+  border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 26px; margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(56,189,248,0.25);
+}
+
+.login-title {
+  font-family: var(--font-h);
+  font-size: 26px; font-weight: 700;
+  color: var(--white); letter-spacing: 0.5px;
+}
+
+.login-sub {
+  font-size: 13px; color: var(--text2);
+  margin-top: 4px; letter-spacing: 0.3px;
+}
+
+.login-form { padding: 32px 40px; }
+
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-family: var(--font-h);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--text2); margin-bottom: 7px;
+}
+
+.field input, .field select {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--white);
+  font-family: var(--font-b);
+  font-size: 15px;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+.btn-main {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+  border: none; border-radius: var(--r);
+  color: #fff;
+  font-family: var(--font-h);
+  font-size: 15px; font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 13px; cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+  margin-top: 4px;
+}
+
+.btn-main:hover { opacity: 0.92; box-shadow: 0 4px 20px rgba(56,189,248,0.3); }
+.btn-main:active { transform: scale(0.99); }
+
+.login-hint {
+  text-align: center; padding: 16px 40px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px; color: var(--text3);
+  font-family: var(--font-m);
+}
+
+.login-hint span { color: var(--blue); }
+
+/* ══════════════════════════════════════
+   APP LAYOUT
+══════════════════════════════════════ */
+#app { display: none; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: 256px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 50;
+}
+
+.sidebar-head {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+
+.s-logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(56,189,248,0.2);
+}
+
+.s-logo-text {
+  font-family: var(--font-h);
+  font-size: 17px; font-weight: 700;
+  color: var(--white); letter-spacing: 0.5px;
+}
+
+.s-logo-ver {
+  font-size: 11px; color: var(--text3);
+  font-family: var(--font-m);
+}
+
+.sidebar-pulse {
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulseAnim 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseAnim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.pulse-label {
+  font-size: 12px; color: var(--green);
+  font-family: var(--font-h); font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.pulse-time {
+  margin-left: auto;
+  font-family: var(--font-m); font-size: 11.5px;
+  color: var(--text3);
+}
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+
+.nav-group-label {
+  padding: 10px 22px 4px;
+  font-family: var(--font-h);
+  font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--text3);
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 22px; cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  font-size: 14px; font-weight: 500;
+  color: var(--text2);
+  margin: 1px 0;
+  position: relative;
+}
+
+.nav-item:hover { background: rgba(56,189,248,0.04); color: var(--text); }
+
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(56,189,248,0.1), transparent);
+  border-left-color: var(--blue);
+  color: var(--blue);
+}
+
+.nav-item svg { flex-shrink: 0; opacity: 0.75; }
+.nav-item.active svg { opacity: 1; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--red); color: #fff;
+  font-family: var(--font-m); font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 10px;
+  min-width: 20px; text-align: center;
+}
+
+.sidebar-user {
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 11px;
+}
+
+.user-ava {
+  width: 35px; height: 35px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--surface3), var(--surface2));
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-h); font-size: 14px; font-weight: 700;
+  color: var(--blue); flex-shrink: 0;
+}
+
+.user-name { font-size: 13.5px; font-weight: 600; color: var(--white2); }
+.user-role { font-size: 11.5px; color: var(--text3); font-family: var(--font-m); }
+
+.btn-logout {
+  margin-left: auto; background: none; border: none;
+  color: var(--text3); cursor: pointer; padding: 5px;
+  border-radius: 6px; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-logout:hover { color: var(--red); background: var(--red-bg); }
+
+/* MAIN */
+.main {
+  margin-left: 256px;
+  padding: 28px 32px;
+  min-height: 100vh;
+}
+
+/* PAGE HEADER */
+.page-hdr {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 26px;
+}
+
+.page-hdr-left { }
+
+.page-title {
+  font-family: var(--font-h);
+  font-size: 22px; font-weight: 700;
+  color: var(--white); letter-spacing: 0.3px;
+}
+
+.page-sub {
+  font-size: 13px; color: var(--text2);
+  margin-top: 3px;
+}
+
+.page-hdr-right { display: flex; gap: 10px; align-items: center; }
+
+/* ══════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--r);
+  font-family: var(--font-h); font-size: 13.5px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+  color: #fff;
+}
+.btn-primary:hover { opacity: 0.9; box-shadow: 0 4px 16px rgba(56,189,248,0.3); }
+
+.btn-sec {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--white2);
+}
+.btn-sec:hover { border-color: var(--blue); color: var(--blue); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--white2); }
+
+.btn-danger {
+  background: var(--red-bg);
+  border: 1px solid rgba(248,113,113,0.25);
+  color: var(--red);
+}
+.btn-danger:hover { background: rgba(248,113,113,0.15); }
+
+.btn-sm { padding: 6px 12px; font-size: 12.5px; }
+
+/* ══════════════════════════════════════
+   CARDS
+══════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 22px;
+  position: relative; overflow: hidden;
+}
+
+.card-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.card-title {
+  font-family: var(--font-h);
+  font-size: 14px; font-weight: 700;
+  color: var(--white2); letter-spacing: 0.3px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.card-title-accent {
+  width: 3px; height: 14px;
+  background: linear-gradient(var(--blue), var(--teal));
+  border-radius: 2px; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   STAT CARDS
+══════════════════════════════════════ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 20px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.stat-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+.stat-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--c, linear-gradient(90deg, var(--blue), var(--teal)));
+  opacity: 0.6;
+}
+
+.stat-label {
+  font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text2); margin-bottom: 10px;
+  font-family: var(--font-h);
+}
+
+.stat-val {
+  font-family: var(--font-h);
+  font-size: 36px; font-weight: 800;
+  color: var(--vcolor, var(--blue));
+  line-height: 1; letter-spacing: -1px;
+}
+
+.stat-suffix {
+  font-size: 14px; font-weight: 600;
+  color: var(--vcolor, var(--blue));
+  opacity: 0.75; margin-left: 2px;
+}
+
+.stat-meta {
+  font-size: 12px; color: var(--text3);
+  margin-top: 8px;
+}
+
+.stat-icon-bg {
+  position: absolute; right: 16px; top: 16px;
+  opacity: 0.06; font-size: 42px;
+  user-select: none;
+}
+
+/* ══════════════════════════════════════
+   BADGES / STATUS
+══════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 5px;
+  font-size: 11.5px; font-weight: 600;
+  font-family: var(--font-h); letter-spacing: 0.3px;
+}
+
+.badge::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+
+.badge-v { background: var(--green-bg); color: var(--green); }
+.badge-r { background: var(--amber-bg); color: var(--amber); }
+.badge-x { background: var(--red-bg); color: var(--red); }
+
+/* ══════════════════════════════════════
+   TABLE
+══════════════════════════════════════ */
+.tbl-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  font-family: var(--font-h);
+  font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.7px;
+  color: var(--text3);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(28,46,70,0.6);
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+tbody tr { transition: background 0.1s; }
+tbody tr:hover td { background: rgba(56,189,248,0.03); }
+tbody tr:last-child td { border-bottom: none; }
+
+.td-id { font-family: var(--font-m); font-size: 12px; color: var(--text3); }
+.td-serial {
+  font-family: var(--font-m); font-size: 13.5px;
+  color: var(--blue); letter-spacing: 0.5px; font-weight: 500;
+}
+.td-cam {
+  font-family: var(--font-m); font-size: 11.5px;
+  color: var(--text2);
+  background: var(--surface2);
+  padding: 3px 8px; border-radius: 4px;
+  border: 1px solid var(--border); display: inline-block;
+}
+.td-time { font-size: 12.5px; color: var(--text2); }
+
+/* Confidence bar */
+.conf-wrap { display: flex; align-items: center; gap: 8px; }
+.conf-bar {
+  width: 72px; height: 4px; background: var(--surface3);
+  border-radius: 2px; overflow: hidden; flex-shrink: 0;
+}
+.conf-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+.conf-num { font-family: var(--font-m); font-size: 12px; color: var(--text2); }
+
+/* ══════════════════════════════════════
+   INPUTS / FORMS
+══════════════════════════════════════ */
+.inp {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--white);
+  font-family: var(--font-b);
+  font-size: 14px;
+  padding: 9px 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inp:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+.inp::placeholder { color: var(--text3); }
+
+.inp-sm { padding: 7px 11px; font-size: 13px; }
+
+select.inp { cursor: pointer; }
+
+option { background: var(--surface2); }
+
+/* ══════════════════════════════════════
+   PAGES
+══════════════════════════════════════ */
+.page { display: none; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ══════════════════════════════════════
+   DASHBOARD PAGE
+══════════════════════════════════════ */
+.dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 20px; }
+
+/* Live activity chart */
+.activity-chart { position: relative; height: 160px; }
+#activityCanvas { width: 100%; height: 100%; display: block; }
+
+/* ══════════════════════════════════════
+   SCAN PAGE
+══════════════════════════════════════ */
+.scan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.upload-area {
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--r2);
+  padding: 44px 32px;
+  text-align: center; cursor: pointer;
+  transition: all 0.2s; position: relative;
+  background: var(--surface);
+  min-height: 200px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+}
+
+.upload-area:hover, .upload-area.drag { border-color: var(--blue); background: rgba(56,189,248,0.03); }
+
+.upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.upload-area-icon { font-size: 38px; opacity: 0.35; }
+.upload-area-title { font-family: var(--font-h); font-size: 16px; font-weight: 600; color: var(--white2); }
+.upload-area-sub { font-size: 13px; color: var(--text3); }
+
+#img-preview-wrap {
+  position: relative; display: none;
+  border-radius: var(--r); overflow: hidden;
+  border: 1px solid var(--border); margin-top: 14px;
+  background: var(--bg);
+}
+
+#img-preview { width: 100%; max-height: 300px; object-fit: contain; display: block; }
+
+.bbox-overlay {
+  position: absolute; pointer-events: none;
+  border: 2px solid var(--teal);
+  box-shadow: 0 0 12px rgba(45,212,191,0.4);
+  display: none;
+}
+
+/* OCR Result panel */
+.ocr-panel { display: flex; flex-direction: column; gap: 0; }
+
+.ocr-state {
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  min-height: 200px; text-align: center; gap: 12px;
+}
+.ocr-state.active { display: flex; }
+
+.ocr-idle-icon { font-size: 48px; opacity: 0.15; }
+.ocr-idle-text { font-size: 13px; color: var(--text3); font-family: var(--font-h); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* spinner */
+.spinner {
+  width: 42px; height: 42px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner-label { font-family: var(--font-h); font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Result */
+#ocr-result { display: none; }
+
+.result-serial-box {
+  background: linear-gradient(135deg, rgba(56,189,248,0.07), rgba(45,212,191,0.05));
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: var(--r2); padding: 20px;
+  text-align: center; margin-bottom: 16px;
+}
+
+.result-serial-label { font-size: 11px; font-family: var(--font-h); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text2); margin-bottom: 8px; }
+
+.result-serial-value {
+  font-family: var(--font-m);
+  font-size: 28px; font-weight: 600;
+  color: var(--blue); letter-spacing: 3px;
+  word-break: break-all;
+}
+
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+.result-cell {
+  background: var(--surface2); border-radius: var(--r);
+  padding: 14px; border: 1px solid var(--border);
+}
+.result-cell-label { font-size: 11px; font-family: var(--font-h); font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3); margin-bottom: 5px; }
+.result-cell-val { font-family: var(--font-h); font-size: 22px; font-weight: 700; }
+
+/* error */
+#ocr-error { display: none; }
+.err-box {
+  background: rgba(248,113,113,0.06);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: var(--r2); padding: 22px;
+  text-align: center;
+}
+.err-icon { font-size: 36px; margin-bottom: 10px; }
+.err-title { font-family: var(--font-h); font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 6px; }
+.err-msg { font-size: 13px; color: var(--text2); }
+
+/* Scan history */
+.scan-hist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+.scan-hist-item:last-child { border-bottom: none; }
+
+/* ══════════════════════════════════════
+   PARTS LIST PAGE
+══════════════════════════════════════ */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.filter-bar .inp { height: 38px; }
+.filter-bar .inp-flex { flex: 1; min-width: 180px; }
+
+/* Pagination */
+.pagination {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 18px; justify-content: flex-end;
+}
+.pg-btn {
+  padding: 6px 11px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text); font-family: var(--font-m); font-size: 12.5px;
+  cursor: pointer; transition: all 0.15s;
+}
+.pg-btn:hover { border-color: var(--blue); color: var(--blue); }
+.pg-btn.cur { background: var(--blue-glow); border-color: var(--blue); color: var(--blue); }
+.pg-info { font-size: 12.5px; color: var(--text3); font-family: var(--font-m); margin-right: 4px; }
+
+/* ══════════════════════════════════════
+   CAMERAS PAGE
+══════════════════════════════════════ */
+.cam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.cam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
+
+.cam-feed {
+  width: 100%; aspect-ratio: 16/9;
+  background: var(--bg); position: relative;
+  overflow: hidden;
+}
+
+.cam-canvas { width: 100%; height: 100%; display: block; }
+
+.cam-info { padding: 16px; }
+.cam-name { font-family: var(--font-h); font-size: 14px; font-weight: 600; color: var(--white2); margin-bottom: 10px; }
+
+.cam-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cam-stat { background: var(--surface2); border-radius: 6px; padding: 9px; border: 1px solid var(--border); }
+.cam-stat-l { font-size: 10.5px; font-family: var(--font-h); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 3px; }
+.cam-stat-v { font-family: var(--font-h); font-size: 18px; font-weight: 700; }
+
+/* ══════════════════════════════════════
+   STATS PAGE
+══════════════════════════════════════ */
+.stats-charts { display: grid; grid-template-columns: 3fr 2fr; gap: 18px; margin-bottom: 20px; }
+
+/* ══════════════════════════════════════
+   SETTINGS PAGE
+══════════════════════════════════════ */
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-family: var(--font-h); font-size: 11.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text3); margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r);
+  margin-bottom: 8px;
+}
+
+.setting-row-l .setting-name { font-size: 14px; font-weight: 600; color: var(--white2); }
+.setting-row-l .setting-desc { font-size: 12.5px; color: var(--text2); margin-top: 2px; }
+
+/* Toggle */
+.toggle {
+  width: 42px; height: 23px; border-radius: 12px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  cursor: pointer; position: relative; transition: all 0.2s;
+  flex-shrink: 0;
+}
+.toggle.on { background: rgba(56,189,248,0.2); border-color: var(--blue); }
+.toggle::after {
+  content: ''; position: absolute;
+  top: 2px; left: 2px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: var(--text3); transition: all 0.2s;
+}
+.toggle.on::after { left: 21px; background: var(--blue); }
+
+/* Slider */
+.slider-wrap { display: flex; align-items: center; gap: 10px; }
+.slider-wrap input[type=range] {
+  width: 110px; accent-color: var(--blue);
+  cursor: pointer;
+}
+.slider-val { font-family: var(--font-m); font-size: 13px; color: var(--blue); min-width: 38px; }
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(6,11,20,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 300; display: none;
+  align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 500px; max-width: 94vw;
+  box-shadow: var(--shadow2);
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: none; } }
+
+.modal-title {
+  font-family: var(--font-h); font-size: 18px; font-weight: 700;
+  color: var(--white); margin-bottom: 22px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+textarea.inp {
+  resize: vertical; min-height: 80px;
+  font-family: var(--font-b); line-height: 1.5;
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 500; display: flex; flex-direction: column; gap: 8px;
+}
+
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 13px 18px;
+  min-width: 260px;
+  font-size: 13.5px; font-weight: 500;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 10px;
+  animation: toastIn 0.3s ease;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast.ok { border-left: 3px solid var(--green); color: var(--white2); }
+.toast.err { border-left: 3px solid var(--red); color: var(--white2); }
+.toast.warn { border-left: 3px solid var(--amber); color: var(--white2); }
+.toast.info { border-left: 3px solid var(--blue); color: var(--white2); }
+
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+/* ══════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════ */
+.empty {
+  text-align: center; padding: 56px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.empty-icon { font-size: 46px; opacity: 0.15; }
+.empty-title { font-family: var(--font-h); font-size: 15px; font-weight: 600; color: var(--text2); }
+.empty-sub { font-size: 13px; color: var(--text3); }
+
+/* ══════════════════════════════════════
+   MISC
+══════════════════════════════════════ */
+.flex { display: flex; align-items: center; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.ml-auto { margin-left: auto; }
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+
+/* Highlight search match */
+mark { background: rgba(56,189,248,0.2); color: var(--blue); border-radius: 2px; padding: 0 2px; }
+
+/* Activity log item */
+.log-item {
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(28,46,70,0.5);
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13.5px;
+}
+.log-item:last-child { border-bottom: none; }
+.log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+/* Profile info in settings */
+.user-profile-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r2); padding: 16px 20px; margin-bottom: 8px;
+}
+.upc-ava {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--surface3), var(--surface2));
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-h); font-size: 16px; font-weight: 700;
+  color: var(--blue); flex-shrink: 0;
+}
+.upc-name { font-size: 14.5px; font-weight: 600; color: var(--white2); }
+.upc-role { font-size: 12px; color: var(--text3); font-family: var(--font-m); margin-top: 1px; }
+
+/* Chart legend */
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+@media (max-width: 1200px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .scan-grid { grid-template-columns: 1fr; }
+  .cam-grid { grid-template-columns: 1fr 1fr; }
+  .stats-charts { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 800px) {
+  .sidebar { width: 200px; }
+  .main { margin-left: 200px; padding: 20px; }
+  .cam-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-top">
+      <div class="login-icon">🔍</div>
+      <div class="login-title">VisionTrack</div>
+      <div class="login-sub">Sanoat Seriya Raqamlari Aniqlash Tizimi</div>
+    </div>
+    <div class="login-form">
+      <div class="field">
+        <label>Foydalanuvchi nomi</label>
+        <input class="inp" type="text" id="l-user" value="admin" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Parol</label>
+        <input class="inp" type="password" id="l-pass" value="admin123" autocomplete="current-password">
+      </div>
+      <button class="btn-main" onclick="doLogin()">Tizimga kirish →</button>
+    </div>
+    <div class="login-hint">admin / admin123 &nbsp;·&nbsp; <span>operator1 / op123</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="s-logo-icon">🔬</div>
+      <div>
+        <div class="s-logo-text">VisionTrack</div>
+        <div class="s-logo-ver">v2.0 · Ishlab chiqarish</div>
+      </div>
+    </div>
+    <div class="sidebar-pulse">
+      <div class="pulse-dot" id="pulse-dot"></div>
+      <div class="pulse-label" id="pulse-label">TIZIM FAOL</div>
+      <div class="pulse-time" id="sidebar-clock"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Asosiy</div>
+      <div class="nav-item active" data-page="dashboard">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="scan">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        OCR Skanerlash
+      </div>
+      <div class="nav-group-label">Ma'lumotlar</div>
+      <div class="nav-item" data-page="parts">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
+        Detallar Ro'yxati
+        <span class="nav-badge" id="review-badge" style="display:none"></span>
+      </div>
+      <div class="nav-item" data-page="search">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Qidiruv
+      </div>
+      <div class="nav-group-label">Monitoring</div>
+      <div class="nav-item" data-page="cameras">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+        Kameralar
+      </div>
+      <div class="nav-item" data-page="stats">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Statistika
+      </div>
+      <div class="nav-group-label">Tizim</div>
+      <div class="nav-item" data-page="settings">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        Sozlamalar
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-ava" id="u-ava">A</div>
+      <div>
+        <div class="user-name" id="u-name">Administrator</div>
+        <div class="user-role" id="u-role">admin</div>
+      </div>
+      <button class="btn-logout" title="Chiqish" onclick="doLogout()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub" id="dash-date">Yuklanmoqda...</div>
+        </div>
+        <div class="page-hdr-right">
+          <button class="btn btn-sec" onclick="refreshDashboard()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Yangilash
+          </button>
+          <button class="btn btn-primary" onclick="navTo('scan')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16m8-8H4"/></svg>
+            Skanerlash
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid" id="dash-stats">
+        <div class="stat-card" style="--vcolor:var(--blue)">
+          <div class="stat-icon-bg">📦</div>
+          <div class="stat-label">Jami Detallar</div>
+          <div><span class="stat-val" id="s-total">0</span></div>
+          <div class="stat-meta">Barcha skanerlar</div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--teal); --c: linear-gradient(90deg, var(--teal), #67e8f9)">
+          <div class="stat-icon-bg">📅</div>
+          <div class="stat-label">Bugungi Skanlar</div>
+          <div><span class="stat-val" id="s-today">0</span></div>
+          <div class="stat-meta" id="s-today-meta">ta yangi detal</div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--green); --c: linear-gradient(90deg, var(--green), #86efac)">
+          <div class="stat-icon-bg">✅</div>
+          <div class="stat-label">Tasdiqlangan</div>
+          <div><span class="stat-val" id="s-verified">0</span></div>
+          <div class="stat-meta" id="s-verified-pct">—</div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--amber); --c: linear-gradient(90deg, var(--amber), #fde68a)">
+          <div class="stat-icon-bg">📊</div>
+          <div class="stat-label">O'rtacha Aniqlik</div>
+          <div><span class="stat-val" id="s-acc">—</span><span class="stat-suffix">%</span></div>
+          <div class="stat-meta">OCR ishonch darajasi</div>
+        </div>
+      </div>
+
+      <!-- Charts + log -->
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-title-accent"></div>7 Kunlik Faoliyat</div>
+            <span style="font-size:12px;color:var(--text3);font-family:var(--font-m)">so'nggi 7 kun</span>
+          </div>
+          <div class="activity-chart">
+            <canvas id="activityCanvas"></canvas>
+          </div>
+          <div class="chart-legend" id="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Skanerlar</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Tasdiqlangan</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-title-accent"></div>Faoliyat Logi</div>
+          </div>
+          <div id="activity-log" style="max-height:200px; overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- Recent parts -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><div class="card-title-accent"></div>So'nggi Aniqlashlar</div>
+          <button class="btn btn-ghost btn-sm" onclick="navTo('parts')">Barchasi →</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Seriya Raqami</th><th>Kamera</th><th>Ishonch</th><th>Status</th><th>Vaqt</th>
+            </tr></thead>
+            <tbody id="recent-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCAN ═══ -->
+    <div class="page" id="page-scan">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">OCR Skanerlash</div>
+          <div class="page-sub">Claude Vision API · Qabul qilinadigan format: <span style="font-family:var(--font-m);color:var(--blue)">2 harf + 4-6 raqam</span>           <div class="page-sub">Haqiqiy Claude Vision API yordamida tasvirdagi seriya raqamni aniqlash</div>nbsp;·          <div class="page-sub">Haqiqiy Claude Vision API yordamida tasvirdagi seriya raqamni aniqlash</div>nbsp; Masalan: <span style="font-family:var(--font-m);color:var(--teal)">AD 00723 · XK1234 · MF-9876</span></div>
+        </div>
+      </div>
+      <div class="scan-grid">
+        <!-- Left: upload -->
+        <div>
+          <div class="card mb20">
+            <div class="card-hdr">
+              <div class="card-title"><div class="card-title-accent"></div>Tasvir Yuklash</div>
+            </div>
+            <div class="upload-area" id="upload-area">
+              <input type="file" id="file-inp" accept="image/*" onchange="onFileSelect(event)">
+              <div class="upload-area-icon">📷</div>
+              <div class="upload-area-title">Tasvirni bu yerga tashlang</div>
+              <div class="upload-area-sub">PNG · JPG · TIFF · BMP — max 15MB</div>
+            </div>
+
+            <div id="img-preview-wrap">
+              <img id="img-preview" alt="Yuklangan tasvir">
+              <div class="bbox-overlay" id="bbox-overlay"></div>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:flex-end; margin-top:14px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:140px;">
+                <div style="font-size:11.5px; font-family:var(--font-h); font-weight:600; text-transform:uppercase; letter-spacing:0.7px; color:var(--text3); margin-bottom:6px;">Kamera</div>
+                <select class="inp" id="scan-cam" style="width:100%">
+                  <option>CAM-001 — Konveyer 1</option>
+                  <option>CAM-002 — Konveyer 2</option>
+                  <option>CAM-003 — Kontrol nuqtasi</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="scan-btn" onclick="runScan()" disabled>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                Tahlil qilish
+              </button>
+            </div>
+          </div>
+
+          <!-- Scan history -->
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title"><div class="card-title-accent"></div>Sessiya Tarixi</div>
+              <span id="hist-count" style="font-family:var(--font-m);font-size:12px;color:var(--text3)">0 ta</span>
+            </div>
+            <div id="scan-history">
+              <div class="empty">
+                <div class="empty-icon">🔎</div>
+                <div class="empty-title">Hali skanerlanmagan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: result -->
+        <div class="card ocr-panel">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-title-accent"></div>OCR Natijasi</div>
+            <span id="ocr-engine-badge" style="font-size:11.5px;padding:3px 9px;background:var(--blue-glow);border:1px solid rgba(56,189,248,0.2);border-radius:4px;color:var(--blue);font-family:var(--font-h);font-weight:600;display:none">Claude Vision</span>
+          </div>
+
+          <!-- States -->
+          <div class="ocr-state active" id="st-idle">
+            <div class="ocr-idle-icon">👁</div>
+            <div class="ocr-idle-text">Tasvir yuklashni kuting</div>
+            <div style="font-size:12.5px;color:var(--text3);max-width:240px;">Chap tarafdan detal tasvirini yuklang, keyin "Tahlil qilish" tugmasini bosing</div>
+          </div>
+
+          <div class="ocr-state" id="st-loading">
+            <div class="spinner"></div>
+            <div class="spinner-label">Tahlil qilinmoqda...</div>
+            <div style="font-size:12.5px;color:var(--text3)" id="scan-step">Claude Vision API ga yuborilmoqda</div>
+          </div>
+
+          <!-- Result -->
+          <div id="ocr-result">
+            <div class="result-serial-box">
+              <div class="result-serial-label">Aniqlangan Seriya Raqami</div>
+              <div class="result-serial-value" id="r-serial">—</div>
+            </div>
+            <div class="result-grid">
+              <div class="result-cell">
+                <div class="result-cell-label">Ishonch</div>
+                <div class="result-cell-val" id="r-conf" style="color:var(--green)">—</div>
+              </div>
+              <div class="result-cell">
+                <div class="result-cell-label">Vaqt</div>
+                <div class="result-cell-val" id="r-time" style="color:var(--teal)">—</div>
+              </div>
+              <div class="result-cell">
+                <div class="result-cell-label">Status</div>
+                <div id="r-status"></div>
+              </div>
+              <div class="result-cell">
+                <div class="result-cell-label">Kamera</div>
+                <div id="r-cam" style="font-family:var(--font-m);font-size:14px;color:var(--text2)">—</div>
+              </div>
+            </div>
+
+            <!-- Raw analysis -->
+            <div id="raw-analysis-box" style="display:none; margin-bottom:16px;">
+              <div style="font-size:11.5px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:6px;">Claude tahlili</div>
+              <div id="raw-analysis" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-size:13px;color:var(--text2);line-height:1.6;max-height:120px;overflow-y:auto;"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-primary" style="flex:1" onclick="confirmPart()">✓ Tasdiqlash</button>
+              <button class="btn btn-sec" onclick="openCorrectModal()">✎ Tuzatish</button>
+              <button class="btn btn-ghost btn-sm" onclick="scanAgain()">↺</button>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div id="ocr-error">
+            <div class="err-box">
+              <div class="err-icon">⚠️</div>
+              <div class="err-title">Seriya raqam aniqlanmadi</div>
+              <div class="err-msg" id="err-msg">Tasvir sifati past yoki seriya raqam ko'rinmayapti</div>
+            </div>
+            <div id="raw-err-analysis" style="margin-top:12px;display:none;">
+              <div style="font-size:11.5px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:6px;">Claude javobi</div>
+              <div id="raw-err-text" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-size:13px;color:var(--text2);line-height:1.6;"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:16px;">
+              <button class="btn btn-sec" onclick="openCorrectModal()">Qo'lda kiritish</button>
+              <button class="btn btn-ghost" onclick="scanAgain()">↺ Qayta urinish</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PARTS LIST ═══ -->
+    <div class="page" id="page-parts">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Detallar Ro'yxati</div>
+          <div class="page-sub" id="parts-sub">Yuklanmoqda...</div>
+        </div>
+        <div class="page-hdr-right">
+          <button class="btn btn-ghost" onclick="exportCSV()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            CSV Eksport
+          </button>
+          <button class="btn btn-primary" onclick="navTo('scan')">+ Yangi Skan</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <input class="inp inp-flex" placeholder="🔍  Seriya raqami qidirish..." id="p-search" oninput="debounce(renderParts, 300)()">
+        <select class="inp" id="p-status" onchange="renderParts()">
+          <option value="">Barcha statuslar</option>
+          <option value="verified">Tasdiqlangan</option>
+          <option value="review">Tekshiruv</option>
+          <option value="rejected">Rad etilgan</option>
+        </select>
+        <select class="inp" id="p-cam" onchange="renderParts()">
+          <option value="">Barcha kameralar</option>
+          <option value="CAM-001">CAM-001</option>
+          <option value="CAM-002">CAM-002</option>
+          <option value="CAM-003">CAM-003</option>
+        </select>
+        <input type="date" class="inp" id="p-from" onchange="renderParts()">
+        <input type="date" class="inp" id="p-to" onchange="renderParts()">
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Tozalash</button>
+      </div>
+      <div class="card tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Seriya Raqami</th><th>Kamera</th>
+            <th>Ishonch</th><th>Status</th><th>Vaqt</th><th>Amallar</th>
+          </tr></thead>
+          <tbody id="parts-tbody"></tbody>
+        </table>
+        <div class="pagination" id="parts-pag"></div>
+      </div>
+    </div>
+
+    <!-- ═══ SEARCH ═══ -->
+    <div class="page" id="page-search">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Qidiruv</div>
+          <div class="page-sub">Seriya raqami, vaqt yoki kamera bo'yicha chuqur qidirish</div>
+        </div>
+      </div>
+      <div class="card mb20">
+        <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:flex-end;">
+          <div>
+            <div style="font-size:12px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:7px;">Qidiruv so'rovi</div>
+            <input class="inp" style="width:100%" id="sq" placeholder="Masalan: SN-2024, PT-001..." onkeydown="if(event.key==='Enter') doSearch()">
+          </div>
+          <button class="btn btn-primary" onclick="doSearch()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Qidirish
+          </button>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:150px;">
+            <div style="font-size:12px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:7px;">Dan</div>
+            <input type="date" class="inp" style="width:100%" id="s-from">
+          </div>
+          <div style="flex:1; min-width:150px;">
+            <div style="font-size:12px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:7px;">Gacha</div>
+            <input type="date" class="inp" style="width:100%" id="s-to">
+          </div>
+          <div style="flex:1; min-width:150px;">
+            <div style="font-size:12px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:7px;">Status</div>
+            <select class="inp" style="width:100%" id="s-status">
+              <option value="">Hammasi</option>
+              <option value="verified">Tasdiqlangan</option>
+              <option value="review">Tekshiruv</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div id="search-results">
+          <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">Qidirish natijasi bu yerda ko'rinadi</div>
+            <div class="empty-sub">Yuqoridagi maydonni to'ldiring va "Qidirish" tugmasini bosing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CAMERAS ═══ -->
+    <div class="page" id="page-cameras">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Kameralar</div>
+          <div class="page-sub">Real vaqt monitoring va animatsiyali feed</div>
+        </div>
+        <button class="btn btn-ghost" onclick="initCameras()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Yangilash
+        </button>
+      </div>
+      <div class="cam-grid" id="cam-grid"></div>
+    </div>
+
+    <!-- ═══ STATS ═══ -->
+    <div class="page" id="page-stats">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Statistika</div>
+          <div class="page-sub">Tizim samaradorligi va faoliyat tahlili</div>
+        </div>
+        <button class="btn btn-ghost" onclick="exportCSV()">↓ Eksport</button>
+      </div>
+      <div class="stat-grid mb20">
+        <div class="stat-card" style="--vcolor:var(--blue)">
+          <div class="stat-label">Jami Skanlar</div>
+          <div><span class="stat-val" id="ss-total">0</span></div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--green);--c:linear-gradient(90deg,var(--green),#86efac)">
+          <div class="stat-label">Tasdiqlangan</div>
+          <div><span class="stat-val" id="ss-v">0</span></div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--amber);--c:linear-gradient(90deg,var(--amber),#fde68a)">
+          <div class="stat-label">Tekshiruv Kerak</div>
+          <div><span class="stat-val" id="ss-r">0</span></div>
+        </div>
+        <div class="stat-card" style="--vcolor:var(--teal);--c:linear-gradient(90deg,var(--teal),#67e8f9)">
+          <div class="stat-label">Aniqlik Darajasi</div>
+          <div><span class="stat-val" id="ss-a">—</span><span class="stat-suffix" style="color:var(--teal)">%</span></div>
+        </div>
+      </div>
+      <div class="stats-charts">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-title-accent"></div>Haftalik Tendentsiya</div>
+          </div>
+          <canvas id="statsCanvas" style="width:100%;height:180px;display:block;"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-title-accent"></div>Kamera Taqsimoti</div>
+          </div>
+          <div id="cam-dist"></div>
+          <div style="margin-top:18px;">
+            <div class="card-title" style="margin-bottom:12px;font-size:13px;"><div class="card-title-accent"></div>Status Taqsimoti</div>
+            <div id="status-dist"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="page" id="page-settings">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Sozlamalar</div>
+          <div class="page-sub">Tizim konfiguratsiyasi va foydalanuvchi boshqaruvi</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">✓ Saqlash</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div class="settings-section">
+            <div class="settings-section-title">OCR Sozlamalari</div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Claude Vision API</div>
+                <div class="setting-desc">Asosiy tahlil motori — haqiqiy AI</div>
+              </div>
+              <div class="toggle on" id="t-api"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Tasvir saqlash</div>
+                <div class="setting-desc">Har bir skandan keyingi tasvir</div>
+              </div>
+              <div class="toggle on" id="t-save" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Minimal ishonch darajasi</div>
+                <div class="setting-desc">Bundan past → "Tekshiruv" statusi</div>
+              </div>
+              <div class="slider-wrap">
+                <input type="range" min="50" max="99" value="85" id="conf-sl" oninput="document.getElementById('conf-sv').textContent=this.value+'%'">
+                <span class="slider-val" id="conf-sv">85%</span>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">Kamera Sozlamalari</div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Avtomatik trigger</div>
+                <div class="setting-desc">Harakat aniqlanganda skanerlash</div>
+              </div>
+              <div class="toggle on" id="t-auto" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Tasvirni o'lchash</div>
+                <div class="setting-desc">1080p → optimal sifat</div>
+              </div>
+              <select class="inp inp-sm" id="res-sel">
+                <option>1920×1080 (Full HD)</option>
+                <option>1280×720 (HD)</option>
+                <option>3840×2160 (4K)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="settings-section">
+            <div class="settings-section-title">Xabarnomalar</div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Ovozli signal</div>
+                <div class="setting-desc">Muvaffaqiyatli skan</div>
+              </div>
+              <div class="toggle on" id="t-sound" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Xato signali</div>
+                <div class="setting-desc">OCR muvaffaqiyatsiz bo'lganda</div>
+              </div>
+              <div class="toggle on" id="t-err-sound" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">Foydalanuvchilar</div>
+            <div class="user-profile-card">
+              <div class="upc-ava" id="set-ava">A</div>
+              <div>
+                <div class="upc-name" id="set-uname">Administrator</div>
+                <div class="upc-role" id="set-urole">admin</div>
+              </div>
+              <button class="btn btn-sec btn-sm ml-auto" onclick="showToast('Profil tahrirlash (demo)','info')">Tahrirlash</button>
+            </div>
+            <div class="user-profile-card">
+              <div class="upc-ava" style="background:linear-gradient(135deg, var(--surface3), var(--surface2));color:var(--teal)">O</div>
+              <div>
+                <div class="upc-name">Operator 1</div>
+                <div class="upc-role">operator</div>
+              </div>
+              <button class="btn btn-sec btn-sm ml-auto" onclick="showToast('Foydalanuvchi boshqaruvi (demo)','info')">Tahrirlash</button>
+            </div>
+            <button class="btn btn-ghost" style="margin-top:10px;" onclick="showToast('Foydalanuvchi qo\'shish (API orqali)','info')">+ Foydalanuvchi qo'shish</button>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">Ma'lumotlar Bazasi</div>
+            <div class="setting-row">
+              <div class="setting-row-l">
+                <div class="setting-name">Sessiya ma'lumotlari</div>
+                <div class="setting-desc" id="db-count">0 ta yozuv</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()">Tozalash</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Correct modal -->
+<div class="overlay" id="modal-correct">
+  <div class="modal">
+    <div class="modal-title">✎ Seriya raqamni tuzatish</div>
+    <div class="field">
+      <label>To'g'ri seriya raqami</label>
+      <input class="inp" type="text" id="cm-serial" placeholder="Masalan: SN-2024-AB1234" style="text-transform:uppercase;letter-spacing:1px;font-family:var(--font-m)">
+    </div>
+    <div class="field">
+      <label>Izoh (ixtiyoriy)</label>
+      <textarea class="inp" id="cm-notes" rows="3" placeholder="Nima uchun tuzatildi?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-correct')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveCorrection()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Part detail modal -->
+<div class="overlay" id="modal-view">
+  <div class="modal">
+    <div class="modal-title" id="mv-title">Detal Ma'lumotlari</div>
+    <div id="mv-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-view')">Yopish</button>
+      <button class="btn btn-danger btn-sm" id="mv-delete-btn">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════ SCRIPT ═══════════════════ -->
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const S = {
+  user: null,
+  parts: [],          // All scanned parts (in-memory)
+  log: [],            // Activity log
+  scanResult: null,   // Last scan result
+  scanFile: null,     // Last scan file base64
+  partsPage: 1,
+  debounceTimers: {},
+  camAnimFrames: {},
+  settings: {
+    minConf: 85,
+    saveImages: true,
+    autoTrigger: true,
+    resolution: 0,
+    sound: true,
+    errSound: true
+  }
+};
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+const USERS = {
+  admin: { pass: 'admin123', name: 'Administrator', role: 'admin' },
+  operator1: { pass: 'op123', name: 'Operator Aliyev', role: 'operator' }
+};
+
+function doLogin() {
+  const u = document.getElementById('l-user').value.trim();
+  const p = document.getElementById('l-pass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    S.user = { username: u, ...USERS[u] };
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('u-ava').textContent = S.user.name[0];
+    document.getElementById('u-name').textContent = S.user.name;
+    document.getElementById('u-role').textContent = S.user.role;
+    document.getElementById('set-ava').textContent = S.user.name[0];
+    document.getElementById('set-uname').textContent = S.user.name;
+    document.getElementById('set-urole').textContent = S.user.role;
+    initApp();
+  } else {
+    showToast('Login yoki parol noto\'g\'ri', 'err');
+    document.querySelector('.login-wrap').style.animation = 'shake 0.3s ease';
+    setTimeout(() => document.querySelector('.login-wrap').style.animation = '', 300);
+  }
+}
+
+function doLogout() {
+  if (!confirm('Tizimdan chiqmoqchimisiz?')) return;
+  location.reload();
+}
+
+document.getElementById('l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ════════════════════════════════════════
+// APP INIT
+// ════════════════════════════════════════
+function initApp() {
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => navTo(el.dataset.page));
+  });
+
+  // Drag & drop for upload
+  const area = document.getElementById('upload-area');
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag'); });
+  area.addEventListener('dragleave', () => area.classList.remove('drag'));
+  area.addEventListener('drop', e => {
+    e.preventDefault(); area.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f) processFileForUpload(f);
+  });
+
+  // Clock
+  const clockEl = document.getElementById('sidebar-clock');
+  const dateEl = document.getElementById('dash-date');
+  function tick() {
+    const n = new Date();
+    clockEl.textContent = n.toLocaleTimeString('uz-UZ');
+    dateEl.textContent = n.toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Demo data
+  seedDemoData();
+  refreshDashboard();
+}
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === page);
+  });
+  document.getElementById('page-' + page).classList.add('active');
+  if (page === 'dashboard') refreshDashboard();
+  if (page === 'parts') { S.partsPage = 1; renderParts(); }
+  if (page === 'cameras') initCameras();
+  if (page === 'stats') renderStats();
+  if (page === 'settings') {
+    document.getElementById('db-count').textContent = S.parts.length + ' ta yozuv';
+    document.getElementById('conf-sl').value = S.settings.minConf;
+    document.getElementById('conf-sv').textContent = S.settings.minConf + '%';
+  }
+}
+
+// ════════════════════════════════════════
+// DEMO DATA SEED
+// ════════════════════════════════════════
+function seedDemoData() {
+  const cams = ['CAM-001', 'CAM-002', 'CAM-003'];
+  const statuses = ['verified', 'verified', 'verified', 'review', 'rejected'];
+  const prefixes = ['SN', 'PT', 'DT', 'MF', 'VT', 'HX', 'AB'];
+  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ';
+  for (let i = 0; i < 52; i++) {
+    const hrs = Math.floor(Math.random() * 200);
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const l1 = chars[Math.floor(Math.random() * chars.length)];
+    const l2 = chars[Math.floor(Math.random() * chars.length)];
+    const num = String(1000 + Math.floor(Math.random() * 8999));
+    S.parts.push({
+      id: i + 1,
+      serial: `${prefix}-2024-${l1}${l2}${num}`,
+      camera: cams[Math.floor(Math.random() * cams.length)],
+      confidence: 60 + Math.floor(Math.random() * 39),
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      ts: new Date(Date.now() - hrs * 3600000),
+      image: null,
+      notes: null,
+      analysis: 'Demo detal — Claude Vision API tahlil qilmagan'
+    });
+  }
+  // Log
+  S.log = [
+    { type: 'ok', text: 'Tizim ishga tushirildi', ts: new Date(Date.now() - 30000) },
+    { type: 'info', text: `${S.parts.length} ta demo detal yuklandi`, ts: new Date(Date.now() - 28000) },
+    { type: 'ok', text: 'Claude Vision API ulandi', ts: new Date(Date.now() - 15000) },
+    { type: 'ok', text: '3 ta kamera faol', ts: new Date(Date.now() - 10000) },
+  ];
+  updateBadge();
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function refreshDashboard() {
+  const total = S.parts.length;
+  const today = S.parts.filter(p => isToday(p.ts)).length;
+  const verified = S.parts.filter(p => p.status === 'verified').length;
+  const avgConf = total ? Math.round(S.parts.reduce((a, p) => a + p.confidence, 0) / total) : 0;
+
+  animCount('s-total', total);
+  animCount('s-today', today);
+  animCount('s-verified', verified);
+  document.getElementById('s-acc').textContent = avgConf;
+  document.getElementById('s-verified-pct').textContent = total ? `${Math.round(verified / total * 100)}% ulushi` : '—';
+
+  renderWeekChart();
+  renderActivityLog();
+  renderRecentParts();
+  updateBadge();
+}
+
+function animCount(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt(el.textContent) || 0;
+  const step = Math.ceil(Math.abs(target - start) / 12);
+  let cur = start;
+  const t = setInterval(() => {
+    cur += cur < target ? step : -step;
+    if ((step > 0 && cur >= target) || (step < 0 && cur <= target)) { cur = target; clearInterval(t); }
+    el.textContent = cur;
+  }, 30);
+}
+
+// ── Week Chart (Canvas) ────────────────────
+function renderWeekChart() {
+  const canvas = document.getElementById('activityCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth;
+  const H = 160;
+  canvas.width = W; canvas.height = H;
+
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toDateString();
+    const count = S.parts.filter(p => new Date(p.ts).toDateString() === ds).length;
+    const vcount = S.parts.filter(p => new Date(p.ts).toDateString() === ds && p.status === 'verified').length;
+    const label = d.toLocaleDateString('uz-UZ', { weekday: 'short' });
+    days.push({ label, count, vcount });
+  }
+
+  const maxVal = Math.max(...days.map(d => d.count), 1);
+  const pad = { l: 10, r: 10, t: 16, b: 28 };
+  const cW = W - pad.l - pad.r;
+  const cH = H - pad.t - pad.b;
+  const barW = cW / days.length;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + cH - (cH * i / 4);
+    ctx.strokeStyle = 'rgba(28,46,70,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Bars + labels
+  days.forEach((d, i) => {
+    const x = pad.l + i * barW + barW * 0.15;
+    const bw = barW * 0.55;
+
+    // Total bar
+    const bh = cH * (d.count / maxVal);
+    const by = pad.t + cH - bh;
+    const grad = ctx.createLinearGradient(0, by, 0, by + bh);
+    grad.addColorStop(0, 'rgba(56,189,248,0.7)');
+    grad.addColorStop(1, 'rgba(56,189,248,0.15)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x, by, bw, bh, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // Verified overlay
+    if (d.vcount > 0) {
+      const vh = cH * (d.vcount / maxVal);
+      const vy = pad.t + cH - vh;
+      const vgrad = ctx.createLinearGradient(0, vy, 0, vy + vh);
+      vgrad.addColorStop(0, 'rgba(74,222,128,0.8)');
+      vgrad.addColorStop(1, 'rgba(74,222,128,0.2)');
+      ctx.fillStyle = vgrad;
+      ctx.beginPath();
+      ctx.roundRect(x + bw * 0.55, vy, bw * 0.45, vh, [2, 2, 0, 0]);
+      ctx.fill();
+    }
+
+    // Count label
+    if (d.count > 0) {
+      ctx.fillStyle = 'rgba(148,163,184,0.9)';
+      ctx.font = '600 11px Sora, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.count, x + bw / 2, by - 4);
+    }
+
+    // Day label
+    ctx.fillStyle = 'rgba(71,85,105,0.9)';
+    ctx.font = '500 11px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.label, x + bw / 2, H - 6);
+  });
+}
+
+function renderActivityLog() {
+  const el = document.getElementById('activity-log');
+  if (!S.log.length) { el.innerHTML = '<div class="empty"><div class="empty-sub">Hali faoliyat yo\'q</div></div>'; return; }
+  const colors = { ok: 'var(--green)', err: 'var(--red)', info: 'var(--blue)', warn: 'var(--amber)' };
+  el.innerHTML = [...S.log].reverse().slice(0, 12).map(l => `
+    <div class="log-item">
+      <div class="log-dot" style="background:${colors[l.type] || colors.info}"></div>
+      <div>
+        <div style="font-size:13.5px;color:var(--white2);font-weight:500;">${l.text}</div>
+        <div style="font-size:11.5px;color:var(--text3);font-family:var(--font-m)">${timeAgo(l.ts)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRecentParts() {
+  const tbody = document.getElementById('recent-tbody');
+  const recent = [...S.parts].slice(0, 8);
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div class="empty-title">Hali detal skanerlanmagan</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recent.map(p => `
+    <tr onclick="openPartModal(${p.id})" style="cursor:pointer;">
+      <td class="td-id">#${p.id}</td>
+      <td><span class="td-serial">${p.serial}</span></td>
+      <td><span class="td-cam">${p.camera}</span></td>
+      <td>${confBar(p.confidence)}</td>
+      <td>${badge(p.status)}</td>
+      <td class="td-time">${timeAgo(p.ts)}</td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+// OCR SCAN — REAL CLAUDE API
+// ════════════════════════════════════════
+function onFileSelect(e) {
+  const f = e.target.files[0];
+  if (f) processFileForUpload(f);
+}
+
+function processFileForUpload(file) {
+  if (!file.type.startsWith('image/')) { showToast('Faqat tasvir fayllari qabul qilinadi', 'err'); return; }
+  if (file.size > 15 * 1024 * 1024) { showToast('Fayl hajmi 15MB dan oshmasligi kerak', 'err'); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.scanFile = e.target.result; // base64 data URL
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('img-preview-wrap').style.display = 'block';
+    document.getElementById('scan-btn').disabled = false;
+    document.getElementById('upload-area').style.borderColor = 'var(--blue)';
+    showOcrState('idle');
+    document.getElementById('bbox-overlay').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOcrState(state) {
+  ['idle', 'loading'].forEach(s => {
+    const el = document.getElementById(`st-${s}`);
+    if (el) el.classList.toggle('active', s === state);
+  });
+  document.getElementById('ocr-result').style.display = state === 'result' ? 'block' : 'none';
+  document.getElementById('ocr-error').style.display = state === 'error' ? 'block' : 'none';
+}
+
+// ════════════════════════════════════════
+// SERIAL NUMBER VALIDATION
+// Qoida: AYNAN 2 ta lotin harf + 4-6 ta raqam
+// Ruxsat etilgan kombinatsiyalar:
+//   XX9999   XX 9999   XX-9999   XX_9999
+//   XX99999  XX 99999  XX-99999  XX_99999
+//   XX999999 XX 999999 XX-999999 XX_999999
+// (X = A-Z harf, 9 = 0-9 raqam)
+//
+// Rad etiladi:
+//   ASD 32   (3 harf, 2 raqam)
+//   A 1234   (1 harf, 4 raqam)
+//   AB 123   (2 harf, 3 raqam — kamida 4 kerak)
+//   AB1234567 (2 harf, 7 raqam — 6 tadan oshmasin)
+//   123 AB   (raqam oldin kelgan)
+//   ABCD1234 (4 harf)
+// ════════════════════════════════════════
+
+// Seriya raqam qoidasiga mosligini tekshirish
+function isValidSerial(raw) {
+  if (!raw) return false;
+  // Tozalash: faqat harf va raqamlarni qoldirish (separator lar o'chiriladi)
+  const clean = raw.replace(/[\s\-_\.\/\\]/g, '').toUpperCase();
+  // Aynan 2 harf + 4-6 raqam
+  return /^[A-Z]{2}\d{4,6}$/.test(clean);
+}
+
+// Xom matndan birinchi mos serial topish
+function extractSerial(text) {
+  if (!text) return null;
+  const upper = text.toUpperCase();
+  // Qidiruv tartibi — eng qattiq formatdan boshlab:
+  const patterns = [
+    /\b([A-Z]{2})[\s\-_]?(\d{6})\b/g,  // 2H+6R
+    /\b([A-Z]{2})[\s\-_]?(\d{5})\b/g,  // 2H+5R
+    /\b([A-Z]{2})[\s\-_]?(\d{4})\b/g,  // 2H+4R
+  ];
+  for (const pat of patterns) {
+    const matches = [...upper.matchAll(pat)];
+    if (matches.length > 0) {
+      const m = matches[0];
+      return m[1] + m[2]; // separator siz normallashtirish
+    }
+  }
+  return null;
+}
+
+// Namuna validatsiyalar (debug uchun)
+// isValidSerial('AD00723')  → true
+// isValidSerial('AD 00723') → true  (bo'sh joy bor, lekin tozalangach to'g'ri)
+// isValidSerial('ASD 32')   → false (3 harf, 2 raqam)
+// isValidSerial('A 1234')   → false (1 harf)
+// isValidSerial('AB 123')   → false (3 raqam)
+// isValidSerial('AB1234')   → true
+// isValidSerial('MF 9876')  → true
+// isValidSerial('XK-0023')  → true
+// isValidSerial('AB999999') → true  (6 raqam)
+// isValidSerial('AB9999999')→ false (7 raqam)
+
+async function runScan() {
+  if (!S.scanFile) { showToast('Avval tasvir yuklang', 'warn'); return; }
+
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+  showOcrState('loading');
+  document.getElementById('ocr-engine-badge').style.display = 'none';
+  document.getElementById('raw-analysis-box').style.display = 'none';
+  document.getElementById('raw-err-analysis').style.display = 'none';
+
+  const steps = [
+    'Tasvir tayyorlanmoqda...',
+    'Claude Vision API ga yuborilmoqda...',
+    'AI barcha matnni o\'qimoqda...',
+    'Format tekshirilmoqda (2H+4-6R)...'
+  ];
+  let stepIdx = 0;
+  const stepEl = document.getElementById('scan-step');
+  const stepTimer = setInterval(() => {
+    stepIdx = (stepIdx + 1) % steps.length;
+    stepEl.textContent = steps[stepIdx];
+  }, 800);
+
+  const startTime = Date.now();
+
+  try {
+    const b64 = S.scanFile.split(',')[1];
+    const mimeType = S.scanFile.split(':')[1].split(';')[0];
+    const camId = document.getElementById('scan-cam').value.split(' ')[0];
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mimeType, data: b64 }
+            },
+            {
+              type: 'text',
+              text: `Siz sanoat korxonasidagi OCR tizimidasiz. Tasvirda ko'rinadigan BARCHA harflar va raqamlarni diqqat bilan o'qing.
+
+MUHIM QOIDA — Faqat quyidagi formatga mos keluvchi seriya raqamni qabul qiling:
+- AYNAN 2 ta lotin harf (A-Z)
+- Keyin bo'shliq, chiziqcha yoki hech narsa bo'lishi mumkin
+- Keyin 4 dan 6 gacha raqam (0-9)
+
+TO'G'RI misollar: "AD 00723", "XK1234", "MF-9876", "AB 005621", "ZP99999"
+NOTO'G'RI misollar: "ASD 32" (3 harf), "A 1234" (1 harf), "AB 123" (3 raqam), "AB1234567" (7 raqam)
+
+Tasvirda ko'rinadigan BARCHA matnlarni ro'yxatga oling, keyin yuqoridagi formatga mosini tanlang.
+
+Faqat JSON formatida javob bering (boshqa hech narsa qo'shmang):
+{
+  "all_text_found": "tasvirda ko'rilgan barcha matn va raqamlar (vergul bilan ajratib)",
+  "serial_candidate": "formatga mos keluvchi matn yoki null",
+  "found": true yoki false,
+  "confidence": 0-100,
+  "description": "qisqa uzbekcha izoh — nima ko'rindi, formatga mosmi",
+  "reject_reason": "agar found:false bo'lsa, nima uchun rad etildi"
+}`
+            }
+          ]
+        }]
+      })
+    });
+
+    clearInterval(stepTimer);
+    const data = await response.json();
+
+    if (data.error) throw new Error(data.error.message || 'API xatosi');
+
+    const elapsed = Date.now() - startTime;
+    const rawText = data.content?.find(c => c.type === 'text')?.text || '';
+
+    // Parse JSON
+    let parsed = null;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      parsed = { found: false, description: rawText, confidence: 0 };
+    }
+
+    // ── Ikki qadam validatsiya ──────────────────
+    // 1. Claude "found:true" dedi
+    // 2. Bizning qat'iy regex ham tasdiqlaydi
+    const rawCandidate = parsed?.serial_candidate || null;
+    const localExtracted = rawCandidate ? extractSerial(rawCandidate) : null;
+    const finalSerial = localExtracted && isValidSerial(localExtracted) ? localExtracted : null;
+
+    // Agar Claude found:true desa ham, bizning regex rad etishi mumkin
+    const isAccepted = !!(parsed?.found && finalSerial);
+
+    // Qo'shimcha: agar Claude found:false desa ham,
+    // all_text_found ichidan o'zimiz qidiramiz
+    let backupSerial = null;
+    if (!isAccepted && parsed?.all_text_found) {
+      backupSerial = extractSerial(parsed.all_text_found);
+      if (backupSerial && !isValidSerial(backupSerial)) backupSerial = null;
+    }
+
+    const acceptedSerial = finalSerial || backupSerial;
+
+    if (acceptedSerial) {
+      // ✅ QABUL QILINDI
+      const conf = Math.min(Math.max(parsed?.confidence || 85, 0), 100);
+      const confThreshold = parseInt(document.getElementById('conf-sl').value) || 85;
+      const status = conf >= confThreshold ? 'verified' : 'review';
+
+      const newPart = {
+        id: S.parts.length ? Math.max(...S.parts.map(p => p.id)) + 1 : 1,
+        serial: acceptedSerial,
+        camera: camId,
+        confidence: conf,
+        status,
+        ts: new Date(),
+        image: S.scanFile,
+        notes: null,
+        analysis: parsed?.description || ''
+      };
+
+      S.parts.unshift(newPart);
+      S.scanResult = newPart;
+      addLog('ok', `Skan qabul qilindi: ${acceptedSerial} (${conf}%)`);
+      updateBadge();
+
+      document.getElementById('r-serial').textContent = acceptedSerial;
+      document.getElementById('r-conf').textContent = conf + '%';
+      document.getElementById('r-conf').style.color = conf >= 85 ? 'var(--green)' : conf >= 70 ? 'var(--amber)' : 'var(--red)';
+      document.getElementById('r-time').textContent = elapsed + 'ms';
+      document.getElementById('r-status').innerHTML = badge(status);
+      document.getElementById('r-cam').textContent = camId;
+      document.getElementById('ocr-engine-badge').style.display = 'inline-flex';
+
+      const analysisText = [
+        parsed?.description,
+        parsed?.all_text_found ? `Tasvirda ko'rilgan: ${parsed.all_text_found}` : null,
+        backupSerial ? `(Backup extraction ishlatildi)` : null
+      ].filter(Boolean).join(' · ');
+
+      if (analysisText) {
+        document.getElementById('raw-analysis').textContent = analysisText;
+        document.getElementById('raw-analysis-box').style.display = 'block';
+      }
+
+      showOcrState('result');
+      renderScanHistory();
+      showToast(`✓ Qabul qilindi: ${acceptedSerial}`, 'ok');
+      playBeep(true);
+
+    } else {
+      // ❌ RAD ETILDI
+      // Sabab aniqlash
+      let reason = '';
+      if (parsed?.serial_candidate && !finalSerial) {
+        // Claude nimadir topdi lekin format noto'g'ri
+        const cand = (parsed.serial_candidate || '').trim();
+        const cleanCand = cand.replace(/[\s\-_]/g, '').toUpperCase();
+        const letters = (cleanCand.match(/[A-Z]/g) || []).length;
+        const digits  = (cleanCand.match(/\d/g) || []).length;
+        reason = `"${cand}" — ${letters} ta harf + ${digits} ta raqam topildi. `;
+        if (letters !== 2) reason += `Harf soni noto'g'ri (${letters} ta, aynan 2 ta kerak). `;
+        if (digits < 4)   reason += `Raqam soni kam (${digits} ta, kamida 4 ta kerak). `;
+        if (digits > 6)   reason += `Raqam soni ko'p (${digits} ta, ko'pi bilan 6 ta). `;
+      } else if (parsed?.reject_reason) {
+        reason = parsed.reject_reason;
+      } else {
+        reason = parsed?.description || 'Tasvirda mos format topilmadi.';
+      }
+
+      const formatHint = 'Kerakli format: 2 lotin harf + 4-6 raqam (masalan: AD 0072, XK1234)';
+      addLog('warn', `Skan rad etildi: ${reason.slice(0, 60)}`);
+
+      document.getElementById('err-msg').textContent = reason;
+      const errBox = document.getElementById('raw-err-text');
+      errBox.innerHTML = `<b>Format talabi:</b> ${formatHint}<br><br>`
+        + (parsed?.all_text_found ? `<b>Tasvirda ko'rilgan matn:</b> ${parsed.all_text_found}` : 'Hech qanday matn aniqlanmadi');
+      document.getElementById('raw-err-analysis').style.display = 'block';
+      showOcrState('error');
+      showToast('Format mos kelmadi', 'warn');
+      playBeep(false);
+    }
+
+  } catch (err) {
+    clearInterval(stepTimer);
+    console.error('API Error:', err);
+    addLog('err', `API xatosi: ${err.message}`);
+    document.getElementById('err-msg').textContent = err.message || 'API bilan bog\'lanishda xato';
+    showOcrState('error');
+    showToast('API xatosi: ' + (err.message || 'Noma\'lum xato'), 'err');
+  }
+
+  btn.disabled = false;
+}
+
+function confirmPart() {
+  if (!S.scanResult) return;
+  S.scanResult.status = 'verified';
+  updateBadge();
+  showToast(`✓ Tasdiqlandi: ${S.scanResult.serial}`, 'ok');
+  addLog('ok', `Operator tasdiqladi: ${S.scanResult.serial}`);
+  navTo('parts');
+}
+
+function scanAgain() {
+  S.scanFile = null; S.scanResult = null;
+  document.getElementById('img-preview-wrap').style.display = 'none';
+  document.getElementById('upload-area').style.borderColor = '';
+  document.getElementById('file-inp').value = '';
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('bbox-overlay').style.display = 'none';
+  document.getElementById('ocr-engine-badge').style.display = 'none';
+  showOcrState('idle');
+}
+
+function renderScanHistory() {
+  const el = document.getElementById('scan-history');
+  const hist = S.parts.slice(0, 6);
+  document.getElementById('hist-count').textContent = S.parts.length + ' ta';
+  if (!hist.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🔎</div><div class="empty-title">Hali skanerlanmagan</div></div>`;
+    return;
+  }
+  el.innerHTML = hist.map(p => `
+    <div class="scan-hist-item" onclick="openPartModal(${p.id})" style="cursor:pointer;">
+      <div style="width:8px;height:8px;border-radius:50%;background:${p.status === 'verified' ? 'var(--green)' : p.status === 'review' ? 'var(--amber)' : 'var(--red)'};flex-shrink:0;margin-top:4px;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--font-m);font-size:13px;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.serial}</div>
+        <div style="font-size:11.5px;color:var(--text3)">${p.camera} · ${timeAgo(p.ts)}</div>
+      </div>
+      <div style="font-family:var(--font-m);font-size:12px;color:${p.confidence >= 85 ? 'var(--green)' : 'var(--amber)'};">${p.confidence}%</div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+// PARTS LIST
+// ════════════════════════════════════════
+function renderParts() {
+  const search = document.getElementById('p-search')?.value?.toLowerCase() || '';
+  const status = document.getElementById('p-status')?.value || '';
+  const cam = document.getElementById('p-cam')?.value || '';
+  const from = document.getElementById('p-from')?.value;
+  const to = document.getElementById('p-to')?.value;
+
+  let filtered = S.parts.filter(p => {
+    if (search && !p.serial.toLowerCase().includes(search)) return false;
+    if (status && p.status !== status) return false;
+    if (cam && p.camera !== cam) return false;
+    if (from && p.ts < new Date(from)) return false;
+    if (to && p.ts > new Date(to + 'T23:59:59')) return false;
+    return true;
+  });
+
+  const total = filtered.length;
+  const limit = 15;
+  const pages = Math.ceil(total / limit) || 1;
+  if (S.partsPage > pages) S.partsPage = 1;
+  const items = filtered.slice((S.partsPage - 1) * limit, S.partsPage * limit);
+
+  document.getElementById('parts-sub').textContent = `${total} ta detal (${S.partsPage}/${pages} sahifa)`;
+
+  const tbody = document.getElementById('parts-tbody');
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Ma'lumot topilmadi</div><div class="empty-sub">Filter yoki qidiruv sozlamalarini o'zgartiring</div></div></td></tr>`;
+  } else {
+    tbody.innerHTML = items.map(p => `
+      <tr>
+        <td class="td-id">#${p.id}</td>
+        <td><span class="td-serial">${p.serial}</span></td>
+        <td><span class="td-cam">${p.camera}</span></td>
+        <td>${confBar(p.confidence)}</td>
+        <td>${badge(p.status)}</td>
+        <td class="td-time">${timeAgo(p.ts)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="openPartModal(${p.id})">Ko'rish</button>
+            ${p.status === 'review' ? `<button class="btn btn-primary btn-sm" onclick="verifyPart(${p.id})">✓</button>` : ''}
+            <button class="btn btn-danger btn-sm" onclick="deletePart(${p.id})">✕</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Pagination
+  const pag = document.getElementById('parts-pag');
+  let html = `<span class="pg-info">${total} ta</span>`;
+  if (S.partsPage > 1) html += `<button class="pg-btn" onclick="goPg(${S.partsPage - 1})">‹</button>`;
+  for (let i = Math.max(1, S.partsPage - 2); i <= Math.min(pages, S.partsPage + 2); i++) {
+    html += `<button class="pg-btn${i === S.partsPage ? ' cur' : ''}" onclick="goPg(${i})">${i}</button>`;
+  }
+  if (S.partsPage < pages) html += `<button class="pg-btn" onclick="goPg(${S.partsPage + 1})">›</button>`;
+  pag.innerHTML = html;
+}
+
+function goPg(p) { S.partsPage = p; renderParts(); }
+
+function clearFilters() {
+  ['p-search', 'p-status', 'p-cam', 'p-from', 'p-to'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  S.partsPage = 1;
+  renderParts();
+}
+
+function verifyPart(id) {
+  const p = S.parts.find(x => x.id === id);
+  if (!p) return;
+  p.status = 'verified';
+  renderParts(); updateBadge();
+  addLog('ok', `Tasdiqlandi: ${p.serial}`);
+  showToast('✓ ' + p.serial + ' tasdiqlandi', 'ok');
+}
+
+function deletePart(id) {
+  if (!confirm('Bu detal yozuvini o\'chirishni tasdiqlaysizmi?')) return;
+  const idx = S.parts.findIndex(x => x.id === id);
+  if (idx !== -1) {
+    const serial = S.parts[idx].serial;
+    S.parts.splice(idx, 1);
+    renderParts(); updateBadge();
+    addLog('warn', `O'chirildi: ${serial}`);
+    showToast('O\'chirildi: ' + serial, 'warn');
+  }
+}
+
+// ════════════════════════════════════════
+// MODALS
+// ════════════════════════════════════════
+function openPartModal(id) {
+  const p = S.parts.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('mv-title').textContent = `Detal #${p.id}`;
+  document.getElementById('mv-content').innerHTML = `
+    ${p.image ? `<div style="margin-bottom:16px;"><img src="${p.image}" style="width:100%;border-radius:var(--r);border:1px solid var(--border);max-height:220px;object-fit:contain;background:var(--bg)"></div>` : ''}
+    <div style="background:linear-gradient(135deg,rgba(56,189,248,0.07),rgba(45,212,191,0.04));border:1px solid rgba(56,189,248,0.18);border-radius:var(--r2);padding:16px 20px;text-align:center;margin-bottom:14px;">
+      <div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text2);margin-bottom:6px;">Seriya Raqami</div>
+      <div style="font-family:var(--font-m);font-size:24px;font-weight:600;color:var(--blue);letter-spacing:3px;">${p.serial}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
+        <div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:4px;">Kamera</div>
+        <div style="font-family:var(--font-m);font-size:14px;">${p.camera}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
+        <div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:4px;">Ishonch</div>
+        <div style="font-family:var(--font-h);font-size:20px;font-weight:700;color:${p.confidence>=85?'var(--green)':p.confidence>=70?'var(--amber)':'var(--red)'};">${p.confidence}%</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
+        <div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:4px;">Status</div>
+        <div>${badge(p.status)}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
+        <div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:4px;">Aniqlangan</div>
+        <div style="font-size:12.5px;color:var(--text2)">${p.ts.toLocaleString('uz-UZ')}</div>
+      </div>
+    </div>
+    ${p.analysis ? `<div><div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:6px;">Tahlil</div><div style="font-size:13px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;line-height:1.5;">${p.analysis}</div></div>` : ''}
+    ${p.notes ? `<div style="margin-top:10px;"><div style="font-size:11px;font-family:var(--font-h);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:6px;">Izoh</div><div style="font-size:13px;color:var(--text2)">${p.notes}</div></div>` : ''}
+  `;
+  document.getElementById('mv-delete-btn').onclick = () => { closeModal('modal-view'); deletePart(id); };
+  document.getElementById('modal-view').classList.add('open');
+}
+
+function openCorrectModal() {
+  document.getElementById('cm-serial').value = S.scanResult?.serial || '';
+  document.getElementById('cm-notes').value = '';
+  document.getElementById('modal-correct').classList.add('open');
+}
+
+function saveCorrection() {
+  const serial = document.getElementById('cm-serial').value.trim().toUpperCase();
+  const notes = document.getElementById('cm-notes').value.trim();
+  if (!serial) { showToast('Seriya raqamni kiriting', 'err'); return; }
+
+  if (S.scanResult) {
+    S.scanResult.serial = serial;
+    S.scanResult.status = 'verified';
+    S.scanResult.notes = notes || null;
+    document.getElementById('r-serial').textContent = serial;
+    document.getElementById('r-status').innerHTML = badge('verified');
+  } else {
+    // Manual add
+    const cam = document.getElementById('scan-cam')?.value?.split(' ')[0] || 'CAM-001';
+    const newPart = {
+      id: S.parts.length ? Math.max(...S.parts.map(p => p.id)) + 1 : 1,
+      serial, camera: cam, confidence: 100, status: 'verified',
+      ts: new Date(), image: S.scanFile, notes, analysis: 'Qo\'lda kiritilgan'
+    };
+    S.parts.unshift(newPart);
+    S.scanResult = newPart;
+    document.getElementById('r-serial').textContent = serial;
+    document.getElementById('r-conf').textContent = '100%';
+    document.getElementById('r-time').textContent = '—';
+    document.getElementById('r-status').innerHTML = badge('verified');
+    document.getElementById('r-cam').textContent = cam;
+    showOcrState('result');
+  }
+
+  addLog('info', `Qo'lda tuzatildi: ${serial}`);
+  updateBadge();
+  renderScanHistory();
+  closeModal('modal-correct');
+  showToast('✓ Saqlandi: ' + serial, 'ok');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ════════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════════
+function doSearch() {
+  const q = (document.getElementById('sq').value || '').trim().toLowerCase();
+  const from = document.getElementById('s-from').value;
+  const to = document.getElementById('s-to').value;
+  const status = document.getElementById('s-status').value;
+
+  let results = S.parts.filter(p => {
+    if (q && !p.serial.toLowerCase().includes(q) && !p.camera.toLowerCase().includes(q)) return false;
+    if (from && p.ts < new Date(from)) return false;
+    if (to && p.ts > new Date(to + 'T23:59:59')) return false;
+    if (status && p.status !== status) return false;
+    return true;
+  });
+
+  const el = document.getElementById('search-results');
+  if (!results.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🔎</div><div class="empty-title">Natija topilmadi</div><div class="empty-sub">So'rovingizni o'zgartirib ko'ring</div></div>`;
+    return;
+  }
+
+  const hi = t => q ? t.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : t;
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-h);font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:14px;">${results.length} ta natija</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Seriya Raqami</th><th>Kamera</th><th>Ishonch</th><th>Status</th><th>Vaqt</th></tr></thead>
+        <tbody>
+          ${results.slice(0, 30).map(p => `
+            <tr onclick="openPartModal(${p.id})" style="cursor:pointer;">
+              <td class="td-id">#${p.id}</td>
+              <td><span class="td-serial">${hi(p.serial)}</span></td>
+              <td><span class="td-cam">${p.camera}</span></td>
+              <td>${confBar(p.confidence)}</td>
+              <td>${badge(p.status)}</td>
+              <td class="td-time">${timeAgo(p.ts)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════
+// CAMERAS — animated canvas
+// ════════════════════════════════════════
+const CAM_CONFIGS = [
+  { id: 'CAM-001', name: 'Konveyer 1 — Kirish', location: 'Seksiya A', active: true },
+  { id: 'CAM-002', name: 'Konveyer 2 — Chiqish', location: 'Seksiya B', active: true },
+  { id: 'CAM-003', name: 'Kontrol nuqtasi', location: 'Seksiya C', active: false },
+];
+
+function initCameras() {
+  // Cancel previous animations
+  Object.values(S.camAnimFrames).forEach(id => cancelAnimationFrame(id));
+  S.camAnimFrames = {};
+
+  const grid = document.getElementById('cam-grid');
+  grid.innerHTML = CAM_CONFIGS.map(c => {
+    const count = S.parts.filter(p => p.camera === c.id).length;
+    const today = S.parts.filter(p => p.camera === c.id && isToday(p.ts)).length;
+    return `
+      <div class="cam-card" style="border-color:${c.active ? 'var(--border2)' : 'var(--border)'};">
+        <div class="cam-feed">
+          <canvas class="cam-canvas" id="cc-${c.id}"></canvas>
+          ${c.active ? `<div style="position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:6px;background:rgba(6,11,20,0.7);padding:4px 10px;border-radius:4px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulseAnim 1s infinite;"></div>
+            <span style="font-family:var(--font-m);font-size:10.5px;color:#fff;">REC</span>
+          </div>` : ''}
+          ${c.active ? `<div style="position:absolute;top:10px;right:10px;font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.5);background:rgba(6,11,20,0.5);padding:3px 7px;border-radius:3px;" id="cc-time-${c.id}">--:--:--</div>` : ''}
+        </div>
+        <div class="cam-info">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="cam-name">${c.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:7px;height:7px;border-radius:50%;background:${c.active ? 'var(--green)' : 'var(--text3)'};${c.active ? 'box-shadow:0 0 6px var(--green);animation:pulseAnim 2s infinite;' : ''}"></div>
+              <span style="font-size:12px;font-family:var(--font-h);font-weight:600;color:${c.active ? 'var(--green)' : 'var(--text3)'};">${c.active ? 'FAOL' : 'NOFAOL'}</span>
+            </div>
+          </div>
+          <div class="cam-stats">
+            <div class="cam-stat">
+              <div class="cam-stat-l">Joylashuv</div>
+              <div style="font-size:13.5px;font-weight:500;color:var(--white2)">${c.location}</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-l">Jami detal</div>
+              <div class="cam-stat-v" style="color:var(--blue)">${count}</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-l">Bugun</div>
+              <div class="cam-stat-v" style="color:var(--teal)">${today}</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-l">Holat</div>
+              <div style="font-size:13px;font-weight:600;color:${c.active ? 'var(--green)' : 'var(--red)'};">${c.active ? 'Online' : 'Offline'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Start animations after DOM update
+  setTimeout(() => {
+    CAM_CONFIGS.forEach(c => {
+      const canvas = document.getElementById('cc-' + c.id);
+      if (!canvas) return;
+      if (c.active) startCamAnimation(canvas, c.id);
+      else drawOfflineScreen(canvas);
+    });
+  }, 50);
+}
+
+function startCamAnimation(canvas, camId) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth || 320;
+  const H = canvas.clientHeight || 180;
+  canvas.width = W; canvas.height = H;
+
+  // State for this camera
+  const state = {
+    particles: Array.from({ length: 8 }, () => ({
+      x: Math.random() * W, y: H * 0.3 + Math.random() * H * 0.4,
+      vx: 0.6 + Math.random() * 0.8, vy: (Math.random() - 0.5) * 0.2,
+      w: 40 + Math.random() * 60, h: 18 + Math.random() * 12,
+      alpha: 0.6 + Math.random() * 0.4
+    })),
+    scanLine: 0,
+    time: 0,
+    fps: 0,
+    lastFps: Date.now()
+  };
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#06091a');
+    bg.addColorStop(0.5, '#060f1a');
+    bg.addColorStop(1, '#040810');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Conveyor belt
+    const beltY = H * 0.45;
+    const beltH = H * 0.22;
+    ctx.fillStyle = 'rgba(17,27,46,0.9)';
+    ctx.fillRect(0, beltY - beltH / 2, W, beltH);
+    ctx.strokeStyle = 'rgba(28,46,70,0.7)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, beltY - beltH / 2, W, beltH);
+
+    // Belt lines (moving)
+    const off = (state.time * 1.5) % 30;
+    ctx.strokeStyle = 'rgba(28,46,70,0.5)';
+    ctx.lineWidth = 1;
+    for (let x = -30 + off; x < W + 30; x += 30) {
+      ctx.beginPath(); ctx.moveTo(x, beltY - beltH / 2); ctx.lineTo(x, beltY + beltH / 2); ctx.stroke();
+    }
+
+    // Parts on belt
+    state.particles.forEach(p => {
+      p.x += p.vx;
+      if (p.x - p.w / 2 > W + 20) p.x = -p.w / 2 - 10;
+
+      const px = p.x, py = beltY;
+
+      // Part shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.ellipse(px, py + p.h / 2 + 2, p.w / 2 * 0.9, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Part body
+      const partGrad = ctx.createLinearGradient(px - p.w / 2, py - p.h / 2, px + p.w / 2, py + p.h / 2);
+      partGrad.addColorStop(0, 'rgba(55,75,100,0.95)');
+      partGrad.addColorStop(0.5, 'rgba(45,65,90,0.9)');
+      partGrad.addColorStop(1, 'rgba(30,50,75,0.85)');
+      ctx.fillStyle = partGrad;
+      ctx.beginPath();
+      ctx.roundRect(px - p.w / 2, py - p.h / 2, p.w, p.h, 3);
+      ctx.fill();
+
+      // Serial number on part
+      if (p.w > 50) {
+        ctx.fillStyle = 'rgba(203,213,225,0.55)';
+        ctx.font = `500 ${Math.floor(p.h * 0.3)}px JetBrains Mono, monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SN-XXXX', px, py);
+      }
+
+      // Scan detection - when part is near center
+      if (Math.abs(px - W / 2) < 30) {
+        ctx.strokeStyle = 'rgba(45,212,191,0.9)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(px - p.w / 2 - 3, py - p.h / 2 - 3, p.w + 6, p.h + 6);
+
+        // Corner markers
+        const markers = [
+          [px - p.w/2 - 3, py - p.h/2 - 3], [px + p.w/2 + 3, py - p.h/2 - 3],
+          [px - p.w/2 - 3, py + p.h/2 + 3], [px + p.w/2 + 3, py + p.h/2 + 3]
+        ];
+        markers.forEach(([mx, my], idx) => {
+          ctx.strokeStyle = 'rgba(56,189,248,1)';
+          ctx.lineWidth = 2;
+          const d = 7;
+          ctx.beginPath();
+          if (idx === 0) { ctx.moveTo(mx, my + d); ctx.lineTo(mx, my); ctx.lineTo(mx + d, my); }
+          if (idx === 1) { ctx.moveTo(mx - d, my); ctx.lineTo(mx, my); ctx.lineTo(mx, my + d); }
+          if (idx === 2) { ctx.moveTo(mx, my - d); ctx.lineTo(mx, my); ctx.lineTo(mx + d, my); }
+          if (idx === 3) { ctx.moveTo(mx - d, my); ctx.lineTo(mx, my); ctx.lineTo(mx, my - d); }
+          ctx.stroke();
+        });
+      }
+    });
+
+    // Scan line (vertical, sweeping)
+    const slX = (Math.sin(state.time * 0.03) * 0.5 + 0.5) * W;
+    const slGrad = ctx.createLinearGradient(slX - 20, 0, slX + 20, 0);
+    slGrad.addColorStop(0, 'transparent');
+    slGrad.addColorStop(0.5, 'rgba(56,189,248,0.35)');
+    slGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = slGrad;
+    ctx.fillRect(slX - 20, 0, 40, H);
+
+    // Center crosshair
+    ctx.strokeStyle = 'rgba(56,189,248,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, beltY); ctx.lineTo(W, beltY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Grid overlay
+    ctx.strokeStyle = 'rgba(56,189,248,0.04)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // FPS counter
+    state.time++;
+    const nowT = Date.now();
+    if (nowT - state.lastFps > 1000) { state.fps = Math.round(1000 / (nowT - state.lastFps) * state.time); state.lastFps = nowT; state.time = 0; }
+
+    // Time overlay
+    const timeEl = document.getElementById('cc-time-' + camId);
+    if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('uz-UZ');
+
+    S.camAnimFrames[camId] = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function drawOfflineScreen(canvas) {
+  const W = canvas.clientWidth || 320;
+  const H = canvas.clientHeight || 180;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#060b14';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(148,163,184,0.1)';
+  ctx.font = '600 13px Sora, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('ULANMAGAN', W / 2, H / 2 - 10);
+  ctx.fillStyle = 'rgba(100,116,139,0.15)';
+  ctx.font = '48px serif';
+  ctx.fillText('📷', W / 2, H / 2 + 25);
+}
+
+// ════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════
+function renderStats() {
+  const total = S.parts.length;
+  const verified = S.parts.filter(p => p.status === 'verified').length;
+  const review = S.parts.filter(p => p.status === 'review').length;
+  const avgConf = total ? Math.round(S.parts.reduce((a, p) => a + p.confidence, 0) / total) : 0;
+
+  ['ss-total', 'ss-v', 'ss-r'].forEach((id, i) => animCount(id, [total, verified, review][i]));
+  document.getElementById('ss-a').textContent = avgConf;
+
+  // Week chart
+  setTimeout(() => {
+    const canvas = document.getElementById('statsCanvas');
+    if (!canvas) return;
+    const W = canvas.parentElement.clientWidth || 400;
+    const H = 180;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toDateString();
+      days.push({
+        label: d.toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric' }),
+        count: S.parts.filter(p => new Date(p.ts).toDateString() === ds).length
+      });
+    }
+    const maxV = Math.max(...days.map(d => d.count), 1);
+    const pad = { l: 10, r: 10, t: 20, b: 32 };
+    const cW = W - pad.l - pad.r;
+    const cH = H - pad.t - pad.b;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Area fill
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t + cH);
+    days.forEach((d, i) => {
+      const x = pad.l + (i / (days.length - 1)) * cW;
+      const y = pad.t + cH - (d.count / maxV) * cH;
+      if (i === 0) ctx.lineTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.lineTo(pad.l + cW, pad.t + cH);
+    ctx.closePath();
+    const aFill = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+    aFill.addColorStop(0, 'rgba(56,189,248,0.25)');
+    aFill.addColorStop(1, 'rgba(56,189,248,0.02)');
+    ctx.fillStyle = aFill;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    days.forEach((d, i) => {
+      const x = pad.l + (i / (days.length - 1)) * cW;
+      const y = pad.t + cH - (d.count / maxV) * cH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = 'rgba(56,189,248,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Points + labels
+    days.forEach((d, i) => {
+      const x = pad.l + (i / (days.length - 1)) * cW;
+      const y = pad.t + cH - (d.count / maxV) * cH;
+      ctx.fillStyle = 'var(--bg)';
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(56,189,248,0.9)';
+      ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+
+      if (i % 2 === 0) {
+        ctx.fillStyle = 'rgba(71,85,105,0.8)';
+        ctx.font = '500 10px Sora, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.label, x, H - 6);
+      }
+    });
+  }, 50);
+
+  // Camera distribution
+  const camDist = document.getElementById('cam-dist');
+  const cams = ['CAM-001', 'CAM-002', 'CAM-003'];
+  const camColors = ['var(--blue)', 'var(--teal)', 'var(--violet)'];
+  camDist.innerHTML = cams.map((c, i) => {
+    const count = S.parts.filter(p => p.camera === c).length;
+    const pct = total ? Math.round(count / total * 100) : 0;
+    return `
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <span style="font-family:var(--font-m);font-size:12.5px;color:var(--white2)">${c}</span>
+          <span style="font-family:var(--font-m);font-size:12.5px;color:${camColors[i]}">${count} ta · ${pct}%</span>
+        </div>
+        <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${camColors[i]};border-radius:3px;transition:width 0.6s;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Status distribution
+  const statusDist = document.getElementById('status-dist');
+  const statuses = [
+    { k: 'verified', label: 'Tasdiqlangan', color: 'var(--green)' },
+    { k: 'review', label: 'Tekshiruv', color: 'var(--amber)' },
+    { k: 'rejected', label: 'Rad etilgan', color: 'var(--red)' },
+  ];
+  statusDist.innerHTML = statuses.map(s => {
+    const count = S.parts.filter(p => p.status === s.k).length;
+    const pct = total ? Math.round(count / total * 100) : 0;
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;">${s.label}</span>
+          <span style="font-family:var(--font-m);font-size:12.5px;color:${s.color}">${count} ta (${pct}%)</span>
+        </div>
+        <div style="height:5px;background:var(--surface3);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${s.color};border-radius:2px;transition:width 0.6s;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════
+function saveSettings() {
+  S.settings.minConf = parseInt(document.getElementById('conf-sl').value);
+  S.settings.saveImages = document.getElementById('t-save').classList.contains('on');
+  S.settings.sound = document.getElementById('t-sound').classList.contains('on');
+  S.settings.errSound = document.getElementById('t-err-sound').classList.contains('on');
+  showToast('✓ Sozlamalar saqlandi', 'ok');
+  addLog('info', 'Sozlamalar yangilandi');
+}
+
+function clearAllData() {
+  if (!confirm(`Barcha ${S.parts.length} ta yozuvni o'chirishni tasdiqlaysizmi?`)) return;
+  S.parts = [];
+  S.log = [{ type: 'warn', text: 'Barcha ma\'lumotlar tozalandi', ts: new Date() }];
+  updateBadge();
+  document.getElementById('db-count').textContent = '0 ta yozuv';
+  showToast('Barcha ma\'lumotlar tozalandi', 'warn');
+}
+
+// ════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════
+function exportCSV() {
+  const header = ['ID', 'Seriya Raqami', 'Kamera', 'Ishonch %', 'Status', 'Aniqlangan Vaqt', 'Izoh'];
+  const rows = S.parts.map(p => [
+    p.id, p.serial, p.camera, p.confidence, p.status,
+    p.ts.toLocaleString('uz-UZ'), p.notes || ''
+  ]);
+  const csv = [header, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `visiontrack_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`↓ ${S.parts.length} ta yozuv eksport qilindi`, 'ok');
+  addLog('info', `CSV eksport: ${S.parts.length} ta yozuv`);
+}
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function badge(status) {
+  const map = { verified: ['badge-v', 'Tasdiqlangan'], review: ['badge-r', 'Tekshiruv'], rejected: ['badge-x', 'Rad etilgan'] };
+  const [cls, label] = map[status] || ['badge-r', status];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function confBar(conf) {
+  const color = conf >= 85 ? 'var(--green)' : conf >= 70 ? 'var(--amber)' : 'var(--red)';
+  return `<div class="conf-wrap"><div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${color}"></div></div><span class="conf-num">${conf}%</span></div>`;
+}
+
+function timeAgo(ts) {
+  const d = ts instanceof Date ? ts : new Date(ts);
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 60) return diff + 's oldin';
+  if (diff < 3600) return Math.floor(diff / 60) + 'min oldin';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'soat oldin';
+  return d.toLocaleDateString('uz-UZ');
+}
+
+function isToday(ts) {
+  return new Date(ts).toDateString() === new Date().toDateString();
+}
+
+function updateBadge() {
+  const n = S.parts.filter(p => p.status === 'review').length;
+  const el = document.getElementById('review-badge');
+  el.textContent = n;
+  el.style.display = n > 0 ? 'inline' : 'none';
+}
+
+function addLog(type, text) {
+  S.log.push({ type, text, ts: new Date() });
+  if (S.log.length > 50) S.log.shift();
+  if (document.getElementById('page-dashboard').classList.contains('active')) {
+    renderActivityLog();
+  }
+}
+
+function playBeep(success) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (success) {
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+    } else {
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
+    }
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  } catch (e) { /* ignore */ }
+}
+
+function showToast(msg, type = 'ok') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icons = { ok: '✓', err: '✕', warn: '⚠', info: 'ℹ' };
+  toast.innerHTML = `<span style="font-size:15px;flex-shrink:0">${icons[type] || 'ℹ'}</span>${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; setTimeout(() => toast.remove(), 300); }, 3200);
+}
+
+function debounce(fn, delay) {
+  return function (...args) {
+    clearTimeout(S.debounceTimers[fn.name]);
+    S.debounceTimers[fn.name] = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('app').style.display || document.getElementById('app').style.display === 'none') return;
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 's') { e.preventDefault(); navTo('scan'); }
+    if (e.key === 'd') { e.preventDefault(); navTo('dashboard'); }
+  }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+  }
+});
+
+// Login Enter key
+document.getElementById('l-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('l-pass').focus(); });
+
+// Resize: redraw chart
+window.addEventListener('resize', () => {
+  if (document.getElementById('page-dashboard').classList.contains('active')) renderWeekChart();
+  if (document.getElementById('page-stats').classList.contains('active')) renderStats();
+  if (document.getElementById('page-cameras').classList.contains('active')) {
+    Object.values(S.camAnimFrames).forEach(id => cancelAnimationFrame(id));
+    S.camAnimFrames = {};
+    setTimeout(() => {
+      CAM_CONFIGS.forEach(c => {
+        const canvas = document.getElementById('cc-' + c.id);
+        if (!canvas) return;
+        if (c.active) startCamAnimation(canvas, c.id);
+        else drawOfflineScreen(canvas);
+      });
+    }, 100);
+  }
+});
+</script>
+</body>
+</html>
